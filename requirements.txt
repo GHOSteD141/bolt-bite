@@ -1,0 +1,8 @@
+# This file is currently not used, as the backend is in Node.js.
+# It's included for potential future use with Python.
+
+# Example dependencies (replace with actual dependencies if needed):
+# Flask
+# requests
+google-auth
+google-api-python-client
