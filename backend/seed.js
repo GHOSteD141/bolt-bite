@@ -11,7 +11,8 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB...'))
   .catch(err => console.error('Could not connect to MongoDB', err));
 
-const csvFilePath = path.join(__dirname, '../../dummy_restaurant_data_80.csv');
+// Update the CSV file path to the correct location
+const csvFilePath = 'C:/Users/SHREYAJIT BEURA/Downloads/dummy_restaurant_data_80.csv';
 
 async function seedDatabase() {
   try {
