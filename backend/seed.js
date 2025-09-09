@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+// Suppress strictQuery warning for Mongoose 7
+mongoose.set('strictQuery', true);
 const csv = require('csv-parser');
 const fs = require('fs');
 const Restaurant = require('./models/restaurant'); // Adjust path if necessary
