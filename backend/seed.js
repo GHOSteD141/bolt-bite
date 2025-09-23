@@ -10,21 +10,29 @@ const path = require('path');
 const dbURI = 'mongodb://localhost:27017/boltbite';
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB...'))
-  .catch(err => console.error('Could not connect to MongoDB', err));
+  .then(() => {
+    console.log('Connected to MongoDB...');
+    console.log('Starting to seed database...');
+    seedDatabase();
+  })
+  .catch(err => {
+    console.error('Failed to connect to MongoDB:', err.message);
+    process.exit(1);
+  });
 
 // Update the CSV file path to the correct location
 const csvFilePath = 'C:/Users/SHREYAJIT BEURA/Downloads/dummy_restaurant_data_80.csv';
 
 async function seedDatabase() {
   try {
+    console.log('Reading CSV file from:', csvFilePath);
     // Clear existing data
     await Restaurant.deleteMany({});
     console.log('Existing data cleared...');
 
     const results = [];
 
-    fs.createReadStream(csvFilePath)
+    fs.createReadStream(csvFilePath) 
       .pipe(csv())
       .on('data', (data) => results.push(data))
       .on('end', async () => {
@@ -33,7 +41,7 @@ async function seedDatabase() {
           restaurantId: parseInt(row['Restaurant ID']),
           name: row['Restaurant Name'],
           countryCode: parseInt(row['Country Code']),
-          city: row['City'],
+          city: row['City'], 
           locality: row['Locality'],
           address: row['Address'],
           cuisines: row['Cuisines'],
@@ -48,13 +56,12 @@ async function seedDatabase() {
         }));
 
         await Restaurant.insertMany(restaurantData);
-        console.log('Database seeded!');
+        console.log(`Successfully inserted ${restaurantData.length} restaurants!`);
         mongoose.connection.close();
       });
   } catch (error) {
     console.error('Error seeding database:', error);
     mongoose.connection.close();
+    process.exit(1);
   }
 }
-
-seedDatabase();
