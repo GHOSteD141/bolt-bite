@@ -2,36 +2,38 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const restaurantRoutes = require('./routes/restaurantRoutes');
-const Restaurant = require('./models/restaurant');
 
 const app = express();
 const port = 3001;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// MongoDB connection
 mongoose.connect('mongodb://localhost:27017/boltbite', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+.then(() => console.log('Connected to MongoDB...'))
+.catch(err => console.error('Could not connect to MongoDB:', err));
 
-app.use('/restaurants', restaurantRoutes);
+// Routes
+app.use('/api/restaurants', restaurantRoutes);
 
-// Test endpoint
+// Test route
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working!' });
 });
 
-// Get all restaurants
-app.get('/api/restaurants', async (req, res) => {
-  try {
-    const restaurants = await Restaurant.find();
-    res.json(restaurants);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Internal Server Error' });
 });
 
 // Get restaurant by ID
