@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const restaurantSchema = new mongoose.Schema({
   restaurantId: Number,
@@ -18,4 +18,4 @@ const restaurantSchema = new mongoose.Schema({
   votes: Number
 });
 
-export default mongoose.model('Restaurant', restaurantSchema);
+module.exports = mongoose.model('Restaurant', restaurantSchema);
