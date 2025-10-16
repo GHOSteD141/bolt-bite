@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { getRestaurants } from '../services/api';
 
 function RestaurantList() {
   const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRestaurants = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:3005/api/restaurants');
-        setRestaurants(response.data);
+        const data = await getRestaurants();
+        setRestaurants(data);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching restaurants:', error);
+        setLoading(false);
       }
     };
-
-    fetchRestaurants();
+    fetchData();
   }, []);
+
+  if (loading) return <div className="container mt-4">Loading...</div>;
 
   return (
     <div className="container mt-4">
@@ -24,12 +28,15 @@ function RestaurantList() {
       <div className="row">
         {restaurants.map(restaurant => (
           <div key={restaurant.restaurantId} className="col-md-4 mb-4">
-            <div className="card">
+            <div className="card restaurant-card">
               <div className="card-body">
                 <h5 className="card-title">{restaurant.name}</h5>
                 <p className="card-text">{restaurant.cuisines}</p>
                 <p className="card-text">Rating: {restaurant.aggregateRating}</p>
-                <Link to={`/restaurant/${restaurant.restaurantId}`} className="btn btn-primary">
+                <Link 
+                  to={`/restaurant/${restaurant.restaurantId}`} 
+                  className="btn btn-primary"
+                >
                   View Details
                 </Link>
               </div>

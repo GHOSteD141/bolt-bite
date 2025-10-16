@@ -9,10 +9,12 @@ function App() {
     <Router>
       <div className="App">
         <Navbar />
-        <Routes>
-          <Route path="/" element={<RestaurantList />} />
-          <Route path="/restaurant/:id" element={<RestaurantDetails />} />
-        </Routes>
+        <main>
+          <Routes>
+            <Route path="/" element={<RestaurantList />} />
+            <Route path="/restaurant/:id" element={<RestaurantDetails />} />
+          </Routes>
+        </main>
       </div>
     </Router>
   );
