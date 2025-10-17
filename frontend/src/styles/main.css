@@ -1,29 +1,77 @@
+:root {
+  --primary-color: #e23744;
+  --secondary-color: #1c1c1c;
+}
+
 .navbar {
-    background-color: #1a1a1a;
-    padding: 1rem 0;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  padding: 15px 0;
 }
 
 .navbar-brand {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #ff6b6b !important;
+  color: var(--primary-color) !important;
+  font-size: 24px;
+  font-weight: 700;
 }
 
-.card {
-    transition: transform 0.2s;
-    margin-bottom: 1rem;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.restaurant-list {
-    padding: 2rem 0;
+.search-bar {
+  background: #f8f9fa;
+  padding: 40px 0;
+  margin-bottom: 30px;
 }
 
 .restaurant-card {
-    border-radius: 8px;
-    overflow: hidden;
+  border: none;
+  border-radius: 8px;
+  transition: transform 0.2s;
+  margin-bottom: 20px;
+}
+
+.restaurant-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.restaurant-image {
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+}
+
+.cuisine-tag {
+  background: #eee;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.rating-badge {
+  background: #48c479;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.quick-filters {
+  margin: 20px 0;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.filter-btn {
+  border: 1px solid #ddd;
+  padding: 8px 15px;
+  margin-right: 10px;
+  border-radius: 20px;
+  background: white;
+  color: #333;
+}
+
+.filter-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
 }
