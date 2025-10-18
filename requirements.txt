@@ -6,3 +6,4 @@
 # requests
 google-auth
 google-api-python-client
+#ai implementation is still left
