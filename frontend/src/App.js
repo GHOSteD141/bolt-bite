@@ -3,18 +3,22 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import RestaurantList from './components/RestaurantList';
 import RestaurantDetails from './components/RestaurantDetails';
+import ErrorBoundary from './components/ErrorBoundary';
+import './styles/components.css';
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Navbar />
-        <main>
-          <Routes>
-            <Route path="/" element={<RestaurantList />} />
-            <Route path="/restaurant/:id" element={<RestaurantDetails />} />
-          </Routes>
-        </main>
+        <ErrorBoundary>
+          <main>
+            <Routes>
+              <Route path="/" element={<RestaurantList />} />
+              <Route path="/restaurant/:id" element={<RestaurantDetails />} />
+            </Routes>
+          </main>
+        </ErrorBoundary>
       </div>
     </Router>
   );

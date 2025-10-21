@@ -1,77 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getRestaurants, searchRestaurants } from '../services/api';
+import SearchBar from './SearchBar';
+import Loading from './Loading';
 
 function RestaurantList() {
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Placeholder data
-  const restaurants = [
-    {
-      id: 1,
-      name: "Golden Curry Cafe",
-      image: "https://source.unsplash.com/800x600/?restaurant,food",
-      cuisines: ["North Indian", "Chinese"],
-      rating: 4.2,
-      deliveryTime: "30-35",
-      priceForTwo: 600
-    },
-    // Add more placeholder restaurants as needed
-  ];
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async (searchParams = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      let data;
+      if (searchParams && searchParams.query) {
+        data = await searchRestaurants(searchParams.query);
+      } else {
+        data = await getRestaurants();
+      }
+      setRestaurants(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch restaurants');
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async (searchParams) => {
+    fetchData(searchParams);
+  };
+
+  if (loading) return <Loading />;
+  if (error) return <div className="container mt-3">Error: {error}</div>;
 
   return (
-    <>
-      <div className="search-bar">
-        <div className="container">
-          <input
-            type="text"
-            className="form-control form-control-lg"
-            placeholder="Search for restaurants, cuisine or a dish..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <div className="container">
-        <div className="quick-filters">
-          <button className="filter-btn">Rating 4.0+</button>
-          <button className="filter-btn">Pure Veg</button>
-          <button className="filter-btn">Less than 30 mins</button>
-          <button className="filter-btn">₹300-₹600</button>
-        </div>
-
-        <h2 className="mb-4">Restaurants in your area</h2>
-        <div className="row">
-          {restaurants.map(restaurant => (
-            <div key={restaurant.id} className="col-md-4 mb-4">
-              <div className="restaurant-card card">
-                <img 
-                  src={restaurant.image} 
-                  className="restaurant-image"
-                  alt={restaurant.name}
-                />
-                <div className="card-body">
-                  <h5 className="card-title">{restaurant.name}</h5>
-                  <div className="mb-2">
-                    {restaurant.cuisines.map(cuisine => (
-                      <span key={cuisine} className="cuisine-tag">{cuisine}</span>
-                    ))}
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <span className="rating-badge">★ {restaurant.rating}</span>
-                    <span>{restaurant.deliveryTime} mins</span>
-                    <span>₹{restaurant.priceForTwo} for two</span>
-                  </div>
-                  <Link to={`/restaurant/${restaurant.id}`} className="btn btn-outline-primary mt-3 w-100">
-                    View Menu
-                  </Link>
-                </div>
+    <div className="container mt-4">
+      <SearchBar onSearch={handleSearch} />
+      <h2>Restaurants in your area</h2>
+      <div className="row">
+        {restaurants.map(restaurant => (
+          <div key={restaurant.restaurantId} className="col-md-4 mb-4">
+            <div className="card">
+              <div className="card-body">
+                <h5 className="card-title">{restaurant.name}</h5>
+                <p className="card-text">{restaurant.cuisines}</p>
+                <p className="card-text">Rating: {restaurant.aggregateRating}</p>
+                <Link to={`/restaurant/${restaurant.restaurantId}`} className="btn btn-primary">
+                  View Details
+                </Link>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-    </>
+    </div>
   );
 }
 
