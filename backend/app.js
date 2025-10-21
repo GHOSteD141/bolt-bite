@@ -19,8 +19,8 @@ mongoose.connect('mongodb://localhost:27017/boltbite', {
   .catch(err => console.error('Could not connect to MongoDB:', err));
 
 // Routes
-app.get('/api/test', (_req, res) => {
-  res.json({ message: 'API is working!' });
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Backend is working!' });
 });
 
 // Use restaurant routes

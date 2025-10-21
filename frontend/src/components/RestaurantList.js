@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getRestaurants, searchRestaurants } from '../services/api';
+import axios from 'axios';
 import SearchBar from './SearchBar';
 import Loading from './Loading';
+
+const API_URL = 'http://localhost:3005/api/restaurants';
 
 function RestaurantList() {
   const [restaurants, setRestaurants] = useState([]);
@@ -17,13 +19,13 @@ function RestaurantList() {
     setLoading(true);
     setError(null);
     try {
-      let data;
+      let url = API_URL;
       if (searchParams && searchParams.query) {
-        data = await searchRestaurants(searchParams.query);
-      } else {
-        data = await getRestaurants();
+        url += `/search/${searchParams.query}`;
       }
-      setRestaurants(data);
+
+      const response = await axios.get(url);
+      setRestaurants(response.data);
       setLoading(false);
     } catch (err) {
       setError(err.message || 'Failed to fetch restaurants');
@@ -31,7 +33,7 @@ function RestaurantList() {
     }
   };
 
-  const handleSearch = async (searchParams) => {
+  const handleSearch = (searchParams) => {
     fetchData(searchParams);
   };
 
