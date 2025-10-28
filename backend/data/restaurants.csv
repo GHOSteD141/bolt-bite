@@ -1,0 +1,6 @@
+RestaurantID,RestaurantName,Cuisines,AverageCostForTwo,Currency,HasTableBooking,HasOnlineDelivery,AggregateRating,RatingText,Votes
+1,Punjabi Tadka,North Indian,800,INR,Yes,Yes,4.2,Very Good,1250
+2,China Town,Chinese,600,INR,No,Yes,4.0,Good,980
+3,Italian Villa,Italian,1200,INR,Yes,No,4.5,Excellent,2100
+4,South Express,South Indian,500,INR,No,Yes,3.8,Good,750
+5,Biryani House,Mughlai,700,INR,No,Yes,4.1,Very Good,1500
