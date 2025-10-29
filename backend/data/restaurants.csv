@@ -1,6 +1,8 @@
-RestaurantID,RestaurantName,Cuisines,AverageCostForTwo,Currency,HasTableBooking,HasOnlineDelivery,AggregateRating,RatingText,Votes
-1,Punjabi Tadka,North Indian,800,INR,Yes,Yes,4.2,Very Good,1250
-2,China Town,Chinese,600,INR,No,Yes,4.0,Good,980
-3,Italian Villa,Italian,1200,INR,Yes,No,4.5,Excellent,2100
-4,South Express,South Indian,500,INR,No,Yes,3.8,Good,750
-5,Biryani House,Mughlai,700,INR,No,Yes,4.1,Very Good,1500
+RestaurantID,RestaurantName,Cuisines,AverageCostForTwo,Currency,HasTableBooking,HasOnlineDelivery,AggregateRating,RatingText,Votes,PopularDishes
+1,Pizza Paradise,Pizzas & Burgers,800,INR,Yes,Yes,4.2,Very Good,1250,"Margherita Pizza, BBQ Chicken Pizza"
+2,Dragon House,Chinese & Fast Food,600,INR,No,Yes,4.0,Good,980,"Chilli Chicken, Momos"
+3,North Indian Delight,North Indian,900,INR,Yes,Yes,4.5,Excellent,2100,"Butter Chicken, Dal Makhani"
+4,South Indian Express,South Indian,500,INR,No,Yes,3.8,Good,750,"Masala Dosa, Idli Sambhar"
+5,Street Food Corner,Snacks & Street Food,400,INR,No,Yes,4.1,Very Good,1500,"Samosa, Pav Bhaji"
+6,Sweet & Chill,Desserts & Beverages,600,INR,Yes,No,4.3,Very Good,890,"Gulab Jamun, Cold Coffee"
+7,Thali House,Combos & Meals,700,INR,Yes,Yes,4.4,Very Good,670,"Veg Thali, Non-Veg Thali"

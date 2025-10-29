@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
 
+const menuItemSchema = new mongoose.Schema({
+  name: String,
+  category: String,
+  price: Number,
+  description: String,
+  isVeg: Boolean,
+  image: String
+});
+
 const restaurantSchema = new mongoose.Schema({
   restaurantId: Number,
   name: String,
@@ -15,7 +24,8 @@ const restaurantSchema = new mongoose.Schema({
   aggregateRating: Number,
   ratingColor: String,
   ratingText: String,
-  votes: Number
+  votes: Number,
+  menu: [menuItemSchema]
 });
 
 module.exports = mongoose.model('Restaurant', restaurantSchema);

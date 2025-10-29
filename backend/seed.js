@@ -1,13 +1,14 @@
 const mongoose = require('mongoose');
-// Suppress strictQuery warning for Mongoose 7
 mongoose.set('strictQuery', true);
 const csv = require('csv-parser');
 const fs = require('fs');
-const Restaurant = require('./models/restaurant'); // Adjust path if necessary
+const Restaurant = require('./models/restaurant.cjs');
 const path = require('path');
+const menuItems = require('./data/menu');
 
-// MongoDB connection string
 const dbURI = 'mongodb://localhost:27017/boltbite';
+// Update CSV file path to use the local data directory
+const csvFilePath = path.join(__dirname, 'data', 'restaurants.csv');
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
@@ -20,44 +21,47 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
     process.exit(1);
   });
 
-// Update the CSV file path to the correct location
-const csvFilePath = 'C:/Users/SHREYAJIT BEURA/Downloads/dummy_restaurant_data_80.csv';
-
 async function seedDatabase() {
   try {
     console.log('Reading CSV file from:', csvFilePath);
-    // Clear existing data
     await Restaurant.deleteMany({});
     console.log('Existing data cleared...');
 
     const results = [];
-
-    fs.createReadStream(csvFilePath) 
+    fs.createReadStream(csvFilePath)
       .pipe(csv())
       .on('data', (data) => results.push(data))
       .on('end', async () => {
-        // Convert CSV data to the format expected by your Mongoose schema
         const restaurantData = results.map(row => ({
-          restaurantId: parseInt(row['Restaurant ID']),
-          name: row['Restaurant Name'],
-          countryCode: parseInt(row['Country Code']),
-          city: row['City'], 
-          locality: row['Locality'],
-          address: row['Address'],
-          cuisines: row['Cuisines'],
-          currency: row['Currency'],
-          hasTableBooking: row['Has Table Booking'] === 'True',
-          hasOnlineDelivery: row['Has Online Delivery'] === 'True',
-          priceRange: parseInt(row['Price Range']),
-          aggregateRating: parseFloat(row['Aggregate Rating']),
-          ratingColor: row['Rating Color'],
-          ratingText: row['Rating Text'],
-          votes: parseInt(row['Votes'])
+          restaurantId: parseInt(row.RestaurantID),
+          name: row.RestaurantName,
+          cuisines: row.Cuisines,
+          averageCostForTwo: parseInt(row.AverageCostForTwo),
+          currency: row.Currency,
+          hasTableBooking: row.HasTableBooking === 'Yes',
+          hasOnlineDelivery: row.HasOnlineDelivery === 'Yes',
+          aggregateRating: parseFloat(row.AggregateRating),
+          ratingText: row.RatingText,
+          votes: parseInt(row.Votes),
+          popularDishes: row.PopularDishes ? row.PopularDishes.split(',').map(dish => dish.trim()) : [],
+          menu: Object.entries(menuItems).flatMap(([category, items]) => 
+            items.map(item => ({
+              ...item,
+              category,
+              description: `Delicious ${item.name}`,
+              image: `${item.name.toLowerCase().replace(/ /g, '-')}.jpg`
+            }))
+          )
         }));
 
         await Restaurant.insertMany(restaurantData);
-        console.log(`Successfully inserted ${restaurantData.length} restaurants!`);
+        console.log(`Successfully inserted ${restaurantData.length} restaurants with menus!`);
         mongoose.connection.close();
+      })
+      .on('error', (error) => {
+        console.error('Error reading CSV:', error);
+        mongoose.connection.close();
+        process.exit(1);
       });
   } catch (error) {
     console.error('Error seeding database:', error);
