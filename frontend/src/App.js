@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import RestaurantList from './components/RestaurantList';
 import RestaurantDetails from './components/RestaurantDetails';
 import ErrorBoundary from './components/ErrorBoundary';
+import Support from './components/Support';
 import './styles/components.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             </Routes>
           </main>
         </ErrorBoundary>
+        <Support />
       </div>
     </Router>
   );
