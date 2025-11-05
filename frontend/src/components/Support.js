@@ -1,33 +1,35 @@
 import React, { useState } from 'react';
+import ChatModal from './ChatModal';
 
 const Support = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   return (
     <div className="support-widget">
-      {isOpen ? (
+      {isOpen && (
         <div className="support-modal">
           <div className="support-header">
             <h3>Customer Support</h3>
             <button onClick={() => setIsOpen(false)}>×</button>
           </div>
           <div className="support-content">
-            <p>Need help? Contact us:</p>
-            <a href="tel:+1234567890">📞 Call Support</a>
-            <a href="mailto:support@boltbite.com">✉️ Email Support</a>
-            <button onClick={() => window.location.href='/chat'}>
-              💬 Live Chat
+            <button onClick={() => setShowChat(true)} className="support-option">
+              💬 Live Chat with AI
             </button>
+            <a href="tel:+1234567890" className="support-option">
+              📞 Call Support
+            </a>
+            <a href="mailto:support@boltbite.com" className="support-option">
+              ✉️ Email Support
+            </a>
           </div>
         </div>
-      ) : (
-        <button 
-          className="support-button"
-          onClick={() => setIsOpen(true)}
-        >
-          Need Help? 🎧
-        </button>
       )}
+      <button className="support-button" onClick={() => setIsOpen(true)}>
+        Need Help? 🎧
+      </button>
+      <ChatModal isOpen={showChat} onClose={() => setShowChat(false)} />
     </div>
   );
 };

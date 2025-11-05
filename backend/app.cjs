@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const restaurantRoutes = require('./routes/restaurantRoutes.cjs');
 const Restaurant = require('./models/restaurant.cjs');
+const path = require('path');
 
 const app = express();
 const port = 3005;
@@ -40,6 +41,22 @@ app.get('/api/test', (req, res) => {
 
 // Use restaurant routes
 app.use('/api/restaurants', restaurantRoutes);
+
+// Add CMS agent route
+app.post('/agent-devlopment-kit-repo/cms-agent/chat', async (req, res) => {
+  try {
+    const agentResponse = await fetch('http://localhost:3000/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+    const data = await agentResponse.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Agent error:', error);
+    res.status(500).json({ error: 'Failed to connect to agent' });
+  }
+});
 
 // Server setup
 const server = app.listen(port, () => {
