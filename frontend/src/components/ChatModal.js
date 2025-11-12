@@ -7,32 +7,43 @@ const ChatModal = ({ isOpen, onClose }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const chatRef = useRef(null);
 
-  const authenticate = async () => {
-    try {
-      const response = await fetch('http://localhost:3006/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: 'admin',
-          password: 'admin123',
-          message: 'login'
-        })
-      });
-      
-      if (response.ok) {
-        setIsAuthenticated(true);
-        appendMessage('Authentication successful! How can I help you?', 'agent');
-      }
-    } catch (error) {
-      appendMessage('Authentication failed. Please try again.', 'agent');
-    }
-  };
-
   useEffect(() => {
-    if (isOpen && !isAuthenticated) {
-      authenticate();
-    }
-  }, [isOpen]);
+    // authenticate when modal opens (inline to avoid missing-hook-deps warning)
+    if (!isOpen || isAuthenticated) return;
+    let cancelled = false;
+
+    (async () => {
+      setIsLoading(true);
+      try {
+        const resp = await fetch('http://localhost:3005/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: 'login',
+            username: 'admin',
+            password: 'admin123'
+          })
+        });
+
+        if (cancelled) return;
+
+        if (resp.ok) {
+          // add auth success message directly to messages state (no external fn dependency)
+          setMessages(prev => [...prev, { text: 'Authentication successful! How can I help you?', sender: 'agent', timestamp: Date.now() }]);
+          setIsAuthenticated(true);
+        } else {
+          setMessages(prev => [...prev, { text: 'Authentication failed — continuing in limited mode.', sender: 'agent', timestamp: Date.now() }]);
+        }
+      } catch (err) {
+        console.error('Auth error:', err);
+        setMessages(prev => [...prev, { text: 'Agent unavailable. Please try again later.', sender: 'agent', timestamp: Date.now() }]);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isOpen, isAuthenticated]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,32 +52,26 @@ const ChatModal = ({ isOpen, onClose }) => {
     const userMessage = inputValue.trim();
     setInputValue('');
     setIsLoading(true);
-    appendMessage(userMessage, 'user');
+    setMessages(prev => [...prev, { text: userMessage, sender: 'user', timestamp: Date.now() }]);
 
     try {
-      console.log('Sending message to server...');
-      const response = await fetch('http://localhost:3006/chat', {
+      const response = await fetch('http://localhost:3005/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           message: userMessage,
           username: 'admin',
           password: 'admin123'
         })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = await response.json();
-      appendMessage(data.response || 'No response from server', 'agent');
+      setMessages(prev => [...prev, { text: data.response || 'No response', sender: 'agent', timestamp: Date.now() }]);
     } catch (error) {
       console.error('Chat error:', error);
-      appendMessage('Server connection error. Please try again.', 'agent');
+      setMessages(prev => [...prev, { text: 'Server connection error. Please try again.', sender: 'agent', timestamp: Date.now() }]);
     } finally {
       setIsLoading(false);
     }

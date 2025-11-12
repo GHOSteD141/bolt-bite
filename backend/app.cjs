@@ -42,6 +42,27 @@ app.get('/api/test', (req, res) => {
 // Use restaurant routes
 app.use('/api/restaurants', restaurantRoutes);
 
+// Add chat endpoint that proxies to agent
+app.post('/api/chat', async (req, res) => {
+  try {
+    const agentResponse = await fetch('http://localhost:3006/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body)
+    });
+
+    if (!agentResponse.ok) {
+      throw new Error('Agent server error');
+    }
+
+    const data = await agentResponse.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Chat proxy error:', error);
+    res.status(500).json({ response: 'Unable to connect to chat service' });
+  }
+});
+
 // Add CMS agent route
 app.post('/agent-devlopment-kit-repo/cms-agent/chat', async (req, res) => {
   try {
