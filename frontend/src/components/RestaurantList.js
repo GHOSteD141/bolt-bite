@@ -21,7 +21,7 @@ function RestaurantList() {
     try {
       let url = API_URL;
       if (searchParams && searchParams.query) {
-        url += `/search/${searchParams.query}`;
+        url += `/search/${encodeURIComponent(searchParams.query)}`;
       }
 
       const response = await axios.get(url);
@@ -41,41 +41,49 @@ function RestaurantList() {
   if (error) return <div className="container mt-3">Error: {error}</div>;
 
   return (
-    <div>
-      <div className="search-section">
-        <div className="container">
-          <SearchBar onSearch={handleSearch} />
-          <div className="filter-options">
-            <select className="filter-select">
-              <option>All Cuisines</option>
-              <option>North Indian</option>
-              <option>Chinese</option>
-              <option>Italian</option>
-            </select>
-            <select className="filter-select">
-              <option>Price Range</option>
-              <option>₹0-500</option>
-              <option>₹500-1000</option>
-              <option>₹1000+</option>
-            </select>
-            <select className="filter-select">
-              <option>Rating</option>
-              <option>4.5+</option>
-              <option>4.0+</option>
-              <option>3.5+</option>
-            </select>
+    <>
+      <section className="hero">
+        <div className="container hero-inner">
+          <div className="hero-left">
+            <h1 className="hero-title">Delicious food, <span style={{ color: 'var(--accent)' }}>delivered fast</span></h1>
+            <p className="hero-sub">Order from your favorite restaurants and get fresh, hot meals delivered right to your door.</p>
+
+            {/* Use the SearchBar component and wire up the handler */}
+            <div className="hero-search">
+              <SearchBar onSearch={handleSearch} />
+            </div>
+          </div>
+          <div className="hero-right">
+            {/* decorative image placed via inline style so webpack won't try to resolve it */}
           </div>
         </div>
-      </div>
+
+        {/* decorative cinematic image (right aligned) - uses public path /images/hero-food.svg
+            inline style forces cover/position so the image is visible */}
+        <div
+          className="hero-deco"
+          style={{
+            backgroundImage: "url('/images/hero-food.svg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'right center'
+          }}
+          aria-hidden="true"
+        />
+      </section>
+
       <div className="container">
-        <h2>Restaurants in your area</h2>
+        <div className="section-heading">
+          <h2>Popular near you</h2>
+          <p>Handpicked favorites from top-rated restaurants</p>
+        </div>
+
         <div className="restaurant-grid">
           {restaurants.map(restaurant => (
             <RestaurantCard key={restaurant.restaurantId} restaurant={restaurant} />
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
