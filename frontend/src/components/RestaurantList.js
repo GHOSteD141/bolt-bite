@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar';
+import SmartRecommendations from './SmartRecommendations';
 import Loading from './Loading';
 import RestaurantCard from './RestaurantCard';
 
 const API_URL = 'http://localhost:3005/api/restaurants';
 
 function RestaurantList() {
+  const navigate = useNavigate();
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -22,6 +26,9 @@ function RestaurantList() {
       let url = API_URL;
       if (searchParams && searchParams.query) {
         url += `/search/${encodeURIComponent(searchParams.query)}`;
+        setIsSearchMode(true);
+      } else {
+        setIsSearchMode(false);
       }
 
       const response = await axios.get(url);
@@ -35,6 +42,23 @@ function RestaurantList() {
 
   const handleSearch = (searchParams) => {
     fetchData(searchParams);
+  };
+
+  const handleCuisineSelect = (cuisine) => {
+    // Store cuisine preference for personalization
+    const preferences = {
+      cuisines: [cuisine],
+      maxPrice: null,
+      minRating: 3.5
+    };
+    sessionStorage.setItem('userCuisinePreferences', JSON.stringify(preferences));
+
+    // Perform search with the cuisine
+    handleSearch({ query: cuisine });
+  };
+
+  const handleRestaurantClick = (restaurantId) => {
+    navigate(`/restaurant/${restaurantId}`);
   };
 
   if (loading) return <Loading />;
@@ -71,17 +95,55 @@ function RestaurantList() {
         />
       </section>
 
+      {/* Smart Recommendations - Only show when not in search mode */}
+      {!isSearchMode && <SmartRecommendations onCuisineSelect={handleCuisineSelect} />}
+
       <div className="container">
+        {/* Show different heading based on mode */}
         <div className="section-heading">
-          <h2>Popular near you</h2>
-          <p>Handpicked favorites from top-rated restaurants</p>
+          <h2>
+            {isSearchMode
+              ? `Search Results (${restaurants.length})`
+              : 'All Restaurants'
+            }
+          </h2>
+          <p>
+            {isSearchMode
+              ? `Restaurants matching your search`
+              : 'Browse all available restaurants in your area'
+            }
+          </p>
         </div>
 
-        <div className="restaurant-grid">
-          {restaurants.map(restaurant => (
-            <RestaurantCard key={restaurant.restaurantId} restaurant={restaurant} />
-          ))}
-        </div>
+        {/* Restaurant Grid */}
+        {restaurants.length > 0 ? (
+          <div className="restaurant-grid">
+            {restaurants.map(restaurant => (
+              <RestaurantCard
+                key={restaurant.restaurantId || restaurant.id}
+                restaurant={restaurant}
+                onClick={() => handleRestaurantClick(restaurant.restaurantId || restaurant.id)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="no-results">
+            <div className="no-results-content">
+              <i className="fas fa-search"></i>
+              <h3>No restaurants found</h3>
+              <p>Try searching with different keywords or browse our recommendations above.</p>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  setIsSearchMode(false);
+                  fetchData();
+                }}
+              >
+                Browse All Restaurants
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
