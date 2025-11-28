@@ -18,10 +18,18 @@ function RestaurantCard({ restaurant, onClick }) {
 
   // Get image source with fallback
   const getImageSrc = () => {
-    if (imageError) return '/images/placeholder-restaurant.jpg';
+    if (imageError) return 'https://source.unsplash.com/800x600/?food,restaurant';
+    if (restaurant.ImageURL) return restaurant.ImageURL;
     if (restaurant.image) return restaurant.image;
     if (restaurant.imageUrl) return restaurant.imageUrl;
     return 'https://source.unsplash.com/800x600/?food,restaurant';
+  };
+
+  // Check if restaurant is popular (rating > 4.2 or votes > 1500)
+  const isPopular = restaurant => {
+    const rating = restaurant.rating || restaurant.aggregateRating || 4.0;
+    const votes = restaurant.votes || 0;
+    return rating > 4.2 || votes > 1500;
   };
 
   // Get rating display
@@ -80,7 +88,7 @@ function RestaurantCard({ restaurant, onClick }) {
         />
 
         {/* Popular badge */}
-        {restaurant.popular && (
+        {isPopular(restaurant) && (
           <div className="badge-popular">
             <i className="fas fa-fire"></i>
             Popular
