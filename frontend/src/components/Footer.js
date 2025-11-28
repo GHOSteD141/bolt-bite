@@ -61,7 +61,7 @@ const Footer = () => {
                 <Link to="/safety/contactless-delivery">Contactless Delivery</Link>
               </li>
               <li>
-                <Link to="/safety/delivery-partners">Delivery Partner Safety</span>
+                <Link to="/safety/delivery-partners">Delivery Partner Safety</Link>
               </li>
               <li>
                 <Link to="/safety/covid-info">COVID-19 Information</Link>
