@@ -2,12 +2,27 @@
   --accent: #ff6b35;
   --accent-dark: #ff5a20;
   --muted: #9b8f87;
-  --bg: #f8f9fa;
+  --bg: #fffaf8;
   --card-bg: #ffffff;
   --radius: 14px;
-  --max-width: 1200px;
-  --container-pad: 24px;
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Hide header search on homepage (optional - for mobile) */
+@media (max-width: 768px) {
+  .navbar .search-input {
+    display: none;
+  }
+}
+
+/* Smooth transitions */
+button, input, select {
+  transition: all 0.2s ease;
+}
+
+/* Prevent input focus ring overlap */
+input:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Layout container */
@@ -209,7 +224,7 @@
 /* Cards grid */
 .restaurant-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
   margin-top: 18px;
 }
@@ -219,32 +234,31 @@
   background: var(--card-bg);
   border-radius: var(--radius);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 8px 30px rgba(18,18,18,0.04);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.restaurant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
 }
 .restaurant-image {
   width: 100%;
-  height: 190px;
+  height: 200px;
   object-fit: cover;
-  display: block;
 }
 .card-body {
-  padding: 18px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  padding: 16px;
 }
 .card-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 8px;
   color: #222;
 }
 .card-sub {
   color: var(--muted);
   font-size: 14px;
+  margin-bottom: 12px;
 }
 .card-meta {
   display: flex;
@@ -283,10 +297,17 @@
   background: var(--accent);
   color: white;
   border: none;
-  padding: 12px;
-  border-radius: 10px;
-  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
   font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.btn-add:hover {
+  background: var(--accent-dark);
 }
 
 /* How it works 3-step */

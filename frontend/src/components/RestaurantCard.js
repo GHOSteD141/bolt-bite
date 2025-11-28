@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function RestaurantCard({ restaurant, onClick }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const navigate = useNavigate();
 
   // Handle image load success
   const handleImageLoad = () => {
@@ -66,6 +67,13 @@ function RestaurantCard({ restaurant, onClick }) {
     if (onClick) {
       onClick();
     }
+  };
+
+  // Handle view menu click
+  const handleViewMenu = (e) => {
+    e.stopPropagation();
+    // Navigate to restaurant details page with the correct ID
+    navigate(`/restaurant/${restaurant.restaurantId}`);
   };
 
   return (
@@ -148,10 +156,7 @@ function RestaurantCard({ restaurant, onClick }) {
 
         {/* Card footer */}
         <div className="card-footer">
-          <button className="btn-primary" onClick={(e) => {
-            e.stopPropagation();
-            handleCardClick();
-          }}>
+          <button className="btn-primary" onClick={handleViewMenu}>
             <i className="fas fa-eye"></i>
             View Menu
           </button>

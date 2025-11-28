@@ -1,134 +1,222 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import Loading from './Loading';
+
+const API_URL = 'http://localhost:3005/api/restaurants';
 
 function RestaurantDetails() {
   const { id } = useParams();
   const [restaurant, setRestaurant] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [cart, setCart] = useState({});
   const [cutlery, setCutlery] = useState(false);
-  
+
   useEffect(() => {
-    const fetchRestaurant = async () => {
-      const response = await axios.get(`http://localhost:3005/api/restaurants/${id}`);
-      setRestaurant(response.data);
-    };
     fetchRestaurant();
   }, [id]);
 
+  const fetchRestaurant = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`${API_URL}/${id}`);
+      setRestaurant(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching restaurant:', err);
+      setError(err.message || 'Failed to load restaurant details');
+      setLoading(false);
+    }
+  };
+
   const handleQuantityChange = (itemName, delta) => {
-    setCart(prev => ({
-      ...prev,
-      [itemName]: (prev[itemName] || 0) + delta
-    }));
+    setCart(prev => {
+      const newQty = (prev[itemName] || 0) + delta;
+      return newQty > 0 ? { ...prev, [itemName]: newQty } : { ...prev };
+    });
   };
 
   const calculateTotal = () => {
     if (!restaurant) return 0;
     return Object.entries(cart).reduce((total, [itemName, quantity]) => {
-      const item = restaurant.menu.find(m => m.name === itemName);
+      const item = restaurant.menu?.find(m => m.name === itemName);
       return total + (item?.price || 0) * quantity;
     }, 0);
   };
 
-  if (!restaurant) return <div>Loading...</div>;
+  const groupMenuByCategory = (menu) => {
+    if (!Array.isArray(menu)) return {};
+    return menu.reduce((acc, item) => {
+      const category = item.category || 'Other';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(item);
+      return acc;
+    }, {});
+  };
+
+  if (loading) return <Loading />;
+  if (error) return <div className="container mx-auto p-4 text-red-600">Error: {error}</div>;
+  if (!restaurant) return <div className="container mx-auto p-4">Restaurant not found</div>;
+
+  const groupedMenu = groupMenuByCategory(restaurant.menu);
 
   return (
-    <div className="restaurant-details">
-      <div className="restaurant-header">
-        <h1>{restaurant.name}</h1>
-        <div className="restaurant-info">
-          <span className="cuisine">{restaurant.cuisines}</span>
-          <span className="rating">★ {restaurant.aggregateRating}</span>
-          <span className="votes">({restaurant.votes} votes)</span>
-        </div>
-      </div>
-
-      <div className="menu-cart-container">
-        <div className="menu-section">
-          {restaurant.menu && Object.entries(groupMenuByCategory(restaurant.menu)).map(([category, items]) => (
-            <div key={category} className="menu-category">
-              <h2>{category}</h2>
-              <div className="menu-items">
-                {Array.isArray(items) && items.map(item => (
-                  <div key={item.name} className="menu-item-card">
-                    <div className="item-info">
-                      <h3>{item.name}</h3>
-                      <p>₹{item.price}</p>
-                      {item.isVeg ? 
-                        <span className="veg-badge">🟢</span> : 
-                        <span className="non-veg-badge">🔴</span>
-                      }
-                    </div>
-                    <div className="quantity-selector">
-                      <button onClick={() => handleQuantityChange(item.name, -1)}
-                              disabled={!cart[item.name]}>-</button>
-                      <span>{cart[item.name] || 0}</span>
-                      <button onClick={() => handleQuantityChange(item.name, 1)}>+</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="cart-section">
-          <div className="cart-container">
-            <h2>Your Order</h2>
-            {Object.entries(cart).map(([itemName, quantity]) => {
-              if (quantity === 0) return null;
-              const item = restaurant.menu.find(m => m.name === itemName);
-              return (
-                <div key={itemName} className="cart-item">
-                  <span>{itemName} × {quantity}</span>
-                  <span>₹{item.price * quantity}</span>
-                </div>
-              );
-            })}
-            <div className="cutlery-option">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={cutlery}
-                  onChange={(e) => setCutlery(e.target.checked)}
-                />
-                Include cutlery
-              </label>
-            </div>
-            <div className="cart-total">
-              <span>Total Amount:</span>
-              <span>₹{calculateTotal()}</span>
-            </div>
-            <button className="checkout-button">Proceed to Checkout</button>
+    <div className="bg-gray-50 min-h-screen">
+      {/* Restaurant Header */}
+      <div className="bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{restaurant.name}</h1>
+          <div className="flex gap-4 text-sm text-gray-600">
+            <span>🍽️ {restaurant.cuisines}</span>
+            <span>⭐ {restaurant.aggregateRating || '4.5'}</span>
+            <span>📍 {restaurant.votes || 0} ratings</span>
           </div>
         </div>
       </div>
 
-      <div className="recommendations">
-        <h2>Recommended Dishes</h2>
-        <div className="recommended-dishes">
-          {restaurant.popularDishes?.slice(0, 4).map(dish => (
-            <div key={dish} className="recommended-dish-card">
-              <h3>{dish}</h3>
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Menu Section (Left - 2/3 width) */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Menu</h2>
+              
+              {Object.keys(groupedMenu).length === 0 ? (
+                <p className="text-gray-500">No menu items available</p>
+              ) : (
+                Object.entries(groupedMenu).map(([category, items]) => (
+                  <div key={category} className="mb-8">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-orange-500">
+                      {category}
+                    </h3>
+                    <div className="space-y-3">
+                      {Array.isArray(items) && items.map(item => (
+                        <div key={item.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                              <span className="text-xs">
+                                {item.isVeg ? '🟢' : '🔴'}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600">{item.description || 'Delicious dish'}</p>
+                            <div className="flex gap-2 mt-2">
+                              <span className="text-sm font-semibold text-orange-600">₹{item.price}</span>
+                              {item.is_discounted && (
+                                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">
+                                  🔥 {item.discount_amount}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Quantity Selector */}
+                          <div className="flex items-center gap-2 ml-4">
+                            {cart[item.name] ? (
+                              <div className="flex items-center gap-2 bg-orange-500 text-white rounded-lg px-2 py-1">
+                                <button
+                                  onClick={() => handleQuantityChange(item.name, -1)}
+                                  className="hover:opacity-80"
+                                >
+                                  −
+                                </button>
+                                <span className="w-6 text-center">{cart[item.name]}</span>
+                                <button
+                                  onClick={() => handleQuantityChange(item.name, 1)}
+                                  className="hover:opacity-80"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleQuantityChange(item.name, 1)}
+                                className="bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition"
+                              >
+                                Add
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-          ))}
+          </div>
+
+          {/* Cart Summary (Right - 1/3 width) */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
+
+              {Object.keys(cart).length === 0 ? (
+                <p className="text-gray-500 text-center py-8">Your cart is empty</p>
+              ) : (
+                <>
+                  <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                    {Object.entries(cart).map(([itemName, quantity]) => {
+                      const item = restaurant.menu?.find(m => m.name === itemName);
+                      return (
+                        <div key={itemName} className="flex justify-between text-sm border-b pb-2">
+                          <span className="text-gray-700">
+                            {itemName} × {quantity}
+                          </span>
+                          <span className="font-semibold text-gray-900">
+                            ₹{(item?.price || 0) * quantity}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Cutlery Option */}
+                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={cutlery}
+                        onChange={(e) => setCutlery(e.target.checked)}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm text-gray-700">Include cutlery</span>
+                    </label>
+                  </div>
+
+                  {/* Total */}
+                  <div className="border-t-2 pt-4 mb-4">
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-700">Subtotal</span>
+                      <span className="font-semibold">₹{calculateTotal()}</span>
+                    </div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-700">Delivery</span>
+                      <span className="font-semibold">₹40</span>
+                    </div>
+                    <div className="flex justify-between text-lg font-bold text-orange-600 bg-orange-50 p-2 rounded">
+                      <span>Total</span>
+                      <span>₹{calculateTotal() + 40}</span>
+                    </div>
+                  </div>
+
+                  <button className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold hover:bg-orange-600 transition">
+                    Checkout
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-// Add this helper function at the top of the file
-const groupMenuByCategory = (menu) => {
-  if (!Array.isArray(menu)) return {};
-  return menu.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {});
-};
 
 export default RestaurantDetails;

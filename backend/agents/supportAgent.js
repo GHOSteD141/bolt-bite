@@ -8,15 +8,17 @@ const cmsAgent = require('./cmsAgent');
 class SupportAgent {
   constructor(apiKey) {
     if (!apiKey) {
-      console.warn('Gemini API key not provided. Using fallback responses.');
+      console.warn('⚠️ Gemini API key not provided. Using fallback responses.');
       this.geminiEnabled = false;
     } else {
       try {
         this.genAI = new GoogleGenerativeAI(apiKey);
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+        // Use gemini-2.0-flash (latest available model)
+        this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         this.geminiEnabled = true;
+        console.log('✅ Gemini Support Agent initialized with gemini-2.0-flash');
       } catch (err) {
-        console.error('Failed to initialize Gemini:', err.message);
+        console.error('❌ Failed to initialize Gemini:', err.message);
         this.geminiEnabled = false;
       }
     }
@@ -35,11 +37,13 @@ class SupportAgent {
     const cacheKey = userMessage.toLowerCase();
     const cached = this.responseCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < this.cacheMaxAge) {
+      console.log('📦 Returning cached response');
       return cached.response;
     }
 
     try {
       if (!this.geminiEnabled) {
+        console.log('⚠️ Gemini disabled, using fallback response');
         return this.getFallbackResponse(userMessage);
       }
 
@@ -48,6 +52,7 @@ class SupportAgent {
       
       const systemPrompt = this.constructGeminiPrompt(menuData, discountedItems, userMessage);
       
+      console.log('🚀 Sending request to Gemini API...');
       const result = await this.model.generateContent(systemPrompt);
       const response = await result.response;
       const text = response.text();
@@ -58,9 +63,11 @@ class SupportAgent {
         timestamp: Date.now()
       });
 
+      console.log('✅ Gemini response received');
       return text;
     } catch (error) {
-      console.error('Gemini API error:', error.message);
+      console.error('❌ Gemini API error:', error.message);
+      console.log('🔄 Falling back to hardcoded response');
       return this.getFallbackResponse(userMessage);
     }
   }
@@ -78,7 +85,7 @@ class SupportAgent {
 2. AGGRESSIVELY highlight discounted items (use 🔥 emoji and bold formatting)
 3. Make smart pairing suggestions based on flavor profiles
 4. Be friendly and enthusiastic about our offers
-5. Keep responses concise but helpful
+5. Keep responses concise but helpful (under 150 words)
 
 Current Menu Data:
 ${JSON.stringify(menuData, null, 2)}
