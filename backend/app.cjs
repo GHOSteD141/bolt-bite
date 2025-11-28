@@ -4,9 +4,26 @@ const cors = require('cors');
 const restaurantRoutes = require('./routes/restaurantRoutes.cjs');
 const Restaurant = require('./models/restaurant.cjs');
 const path = require('path');
+require('dotenv').config();
+
+// Import AI agents
+const CMSAgent = require('./agents/cmsAgent');
+const SupportAgent = require('./agents/supportAgent');
 
 const app = express();
-const port = 3005;
+const port = process.env.PORT || 3005;
+
+// Initialize AI agents
+let cmsAgent = null;
+let supportAgent = null;
+
+try {
+  cmsAgent = new CMSAgent();
+  supportAgent = new SupportAgent();
+  console.log('AI Agents initialized successfully');
+} catch (error) {
+  console.error('Failed to initialize AI agents:', error.message);
+}
 
 // Middleware
 app.use(cors());
@@ -42,40 +59,225 @@ app.get('/api/test', (req, res) => {
 // Use restaurant routes
 app.use('/api/restaurants', restaurantRoutes);
 
-// Add chat endpoint that proxies to agent
+// Enhanced /api/chat endpoint with AI agent integration
 app.post('/api/chat', async (req, res) => {
   try {
-    const agentResponse = await fetch('http://localhost:3006/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body)
-    });
+    const { message, sessionId } = req.body;
 
-    if (!agentResponse.ok) {
-      throw new Error('Agent server error');
+    // Validate request
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: "Message is required and must be a string",
+        code: "INVALID_MESSAGE",
+        timestamp: new Date().toISOString()
+      });
     }
 
-    const data = await agentResponse.json();
-    res.json(data);
+    // Check if Support Agent is available
+    if (!supportAgent) {
+      return res.status(503).json({
+        success: false,
+        error: "AI service temporarily unavailable",
+        code: "AI_SERVICE_UNAVAILABLE",
+        timestamp: new Date().toISOString(),
+        retry: true
+      });
+    }
+
+    // Generate AI response
+    const aiResponse = await supportAgent.generateResponse(message, sessionId);
+
+    if (aiResponse.success) {
+      res.json({
+        success: true,
+        response: aiResponse.response,
+        menuContext: aiResponse.menuContext,
+        suggestions: aiResponse.suggestions || [],
+        pairings: aiResponse.pairings || [],
+        timestamp: aiResponse.timestamp,
+        sessionId: aiResponse.sessionId
+      });
+    } else {
+      // Handle AI service errors with fallback
+      res.status(503).json({
+        success: false,
+        error: aiResponse.error || "AI service temporarily unavailable",
+        code: "AI_GENERATION_FAILED",
+        fallbackResponse: aiResponse.fallbackResponse,
+        menuContext: aiResponse.menuContext,
+        timestamp: aiResponse.timestamp,
+        retry: aiResponse.retry || true
+      });
+    }
+
   } catch (error) {
-    console.error('Chat proxy error:', error);
-    res.status(500).json({ response: 'Unable to connect to chat service' });
+    console.error('Chat AI Agent error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Internal server error processing your request",
+      code: "INTERNAL_ERROR",
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
-// Add CMS agent route
-app.post('/agent-devlopment-kit-repo/cms-agent/chat', async (req, res) => {
+// GET /api/menu endpoint for direct menu access
+app.get('/api/menu', async (req, res) => {
   try {
-    const agentResponse = await fetch('http://localhost:3000/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body)
-    });
-    const data = await agentResponse.json();
-    res.json(data);
+    const { category } = req.query;
+
+    if (!cmsAgent) {
+      return res.status(503).json({
+        success: false,
+        error: "Menu service temporarily unavailable",
+        code: "CMS_SERVICE_UNAVAILABLE",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    let menuData;
+    if (category) {
+      menuData = cmsAgent.getItemsByCategory(category);
+    } else {
+      menuData = cmsAgent.getFullMenu();
+    }
+
+    res.json(menuData);
+
   } catch (error) {
-    console.error('Agent error:', error);
-    res.status(500).json({ error: 'Failed to connect to agent' });
+    console.error('Menu endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to retrieve menu data",
+      code: "MENU_RETRIEVAL_ERROR",
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// GET /api/recommendations/:itemName endpoint
+app.get('/api/recommendations/:itemName', async (req, res) => {
+  try {
+    const { itemName } = req.params;
+
+    if (!cmsAgent) {
+      return res.status(503).json({
+        success: false,
+        error: "Menu service temporarily unavailable",
+        code: "CMS_SERVICE_UNAVAILABLE",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const itemData = cmsAgent.getItemByName(itemName);
+
+    if (!itemData.success) {
+      return res.status(404).json({
+        success: false,
+        error: itemData.error,
+        code: "ITEM_NOT_FOUND",
+        suggestions: itemData.suggestions,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const pairings = cmsAgent.getPairingSuggestions(itemData.item, 3);
+
+    res.json({
+      success: true,
+      item: itemData.item,
+      recommendations: pairings.recommendations || [],
+      count: pairings.count || 0,
+      timestamp: pairings.timestamp || new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Recommendations endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to get recommendations",
+      code: "RECOMMENDATIONS_ERROR",
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// GET /api/stats endpoint for menu analytics
+app.get('/api/stats', async (req, res) => {
+  try {
+    if (!cmsAgent) {
+      return res.status(503).json({
+        success: false,
+        error: "Menu service temporarily unavailable",
+        code: "CMS_SERVICE_UNAVAILABLE",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const stats = cmsAgent.getMenuStats();
+    res.json(stats);
+
+  } catch (error) {
+    console.error('Stats endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to retrieve menu statistics",
+      code: "STATS_ERROR",
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// GET /api/discounted endpoint for only discounted items
+app.get('/api/discounted', async (req, res) => {
+  try {
+    if (!cmsAgent) {
+      return res.status(503).json({
+        success: false,
+        error: "Menu service temporarily unavailable",
+        code: "CMS_SERVICE_UNAVAILABLE",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const discounted = cmsAgent.getDiscountedItems();
+    res.json(discounted);
+
+  } catch (error) {
+    console.error('Discounted endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to retrieve discounted items",
+      code: "DISCOUNTED_ERROR",
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// POST /api/refresh endpoint to refresh menu data
+app.post('/api/refresh', async (req, res) => {
+  try {
+    if (!cmsAgent) {
+      return res.status(503).json({
+        success: false,
+        error: "Menu service temporarily unavailable",
+        code: "CMS_SERVICE_UNAVAILABLE",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const refresh = cmsAgent.refreshData();
+    res.json(refresh);
+
+  } catch (error) {
+    console.error('Refresh endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Unable to refresh menu data",
+      code: "REFRESH_ERROR",
+      timestamp: new Date().toISOString()
+    });
   }
 });
 
