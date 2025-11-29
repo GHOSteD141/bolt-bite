@@ -1,0 +1,48 @@
+{
+  // Disable heavy features that cause crashes
+  "extensions.ignoreRecommendations": false,
+  "telemetry.telemetryLevel": "off",  
+  
+  // Performance optimizations
+  "editor.maxTokenizationLineLength": 2000,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false
+  },
+  
+  // Disable problematic validations
+  "json.schemaValidation": "off",
+  "json.maxItemsComputed": 5000,
+  
+  // File exclusions to reduce indexing
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.DS_Store": true,
+    "**/.git": true,
+    "**/dist": true,
+    "**/build": true
+  },
+  
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.git": true
+  },
+  
+  // Disable unused features
+  "editor.codeActionsOnSave": {},
+  "editor.formatOnSave": false,
+  "editor.autoSave": "off",
+  
+  // Reduce memory usage
+  "editor.wordBasedSuggestions": "off",
+  "editor.suggest.maxVisibleSuggestions": 12,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

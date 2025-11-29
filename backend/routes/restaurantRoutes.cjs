@@ -5,8 +5,13 @@ const Restaurant = require('../models/restaurant.cjs');
 // GET all restaurants
 router.get('/', async (req, res) => {
     try {
-        const restaurants = await Restaurant.find();
-        res.json(restaurants);
+        const restaurants = await Restaurant.find().lean();
+        // Add default images if not present
+        const enrichedRestaurants = restaurants.map(r => ({
+            ...r,
+            imageUrl: r.imageUrl || `https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop&q=80`
+        }));
+        res.json(enrichedRestaurants);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
