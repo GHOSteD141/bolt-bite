@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import SearchBar from './SearchBar';
 import Loading from './Loading';
 import RestaurantCard from './RestaurantCard';
 

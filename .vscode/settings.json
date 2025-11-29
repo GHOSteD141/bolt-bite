@@ -1,4 +1,9 @@
 {
+  // Keep existing C++ settings
+  "C_Cpp_Runner.cCompilerPath": "gcc",
+  "C_Cpp_Runner.cppCompilerPath": "g++",
+  "C_Cpp_Runner.debuggerPath": "gdb",
+  
   // Disable heavy features that cause crashes
   "extensions.ignoreRecommendations": false,
   "telemetry.telemetryLevel": "off",  
@@ -6,15 +11,14 @@
   // Performance optimizations
   "editor.maxTokenizationLineLength": 2000,
   "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "vscode.json-language-features",
     "editor.formatOnSave": false
   },
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": false
   },
   
-  // Disable problematic validations
+  // Only disable the problematic schema validation
   "json.schemaValidation": "off",
   "json.maxItemsComputed": 5000,
   
@@ -35,14 +39,15 @@
   },
   
   // Disable unused features
-  "editor.codeActionsOnSave": {},
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
   "editor.formatOnSave": false,
   "editor.autoSave": "off",
   
-  // Reduce memory usage
-  "editor.wordBasedSuggestions": "off",
-  "editor.suggest.maxVisibleSuggestions": 12,
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    // Reduce memory usage
+    "editor.wordBasedSuggestions": "off",
+    "[typescript]": {
+      "editor.defaultFormatter": "vscode.typescript-language-features"
+    }
   }
-}

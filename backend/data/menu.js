@@ -11,7 +11,8 @@ const menuItems = {
       category: "Italian",
       is_discounted: true,
       discount_amount: "20% off",
-      flavor_profile: ["savory", "creamy", "mild"]
+      flavor_profile: ["savory", "creamy", "mild"],
+      restaurantId: 1
     },
     { 
       name: "Farmhouse Pizza",
@@ -24,7 +25,8 @@ const menuItems = {
       category: "Italian",
       is_discounted: false,
       discount_amount: null,
-      flavor_profile: ["savory", "fresh", "creamy"]
+      flavor_profile: ["savory", "fresh", "creamy"],
+      restaurantId: 1
     },
     { 
       name: "Chicken Pepperoni Pizza",
@@ -37,7 +39,8 @@ const menuItems = {
       category: "Italian",
       is_discounted: true,
       discount_amount: "15% off",
-      flavor_profile: ["spicy", "savory", "meaty"]
+      flavor_profile: ["spicy", "savory", "meaty"],
+      restaurantId: 1
     },
     { 
       name: "BBQ Chicken Pizza",
@@ -50,7 +53,8 @@ const menuItems = {
       category: "Italian",
       is_discounted: false,
       discount_amount: null,
-      flavor_profile: ["spicy", "tangy", "smoky"]
+      flavor_profile: ["spicy", "tangy", "smoky"],
+      restaurantId: 1
     },
     { 
       name: "Classic Veg Burger",
@@ -63,7 +67,8 @@ const menuItems = {
       category: "American",
       is_discounted: true,
       discount_amount: "25% off",
-      flavor_profile: ["savory", "fresh", "mild"]
+      flavor_profile: ["savory", "fresh", "mild"],
+      restaurantId: 1
     },
     { 
       name: "Cheese Burst Burger",
@@ -76,7 +81,8 @@ const menuItems = {
       category: "American",
       is_discounted: false,
       discount_amount: null,
-      flavor_profile: ["savory", "creamy", "mild"]
+      flavor_profile: ["savory", "creamy", "mild"],
+      restaurantId: 1
     },
     { 
       name: "Chicken Crispy Burger",
@@ -89,7 +95,8 @@ const menuItems = {
       category: "American",
       is_discounted: true,
       discount_amount: "20% off",
-      flavor_profile: ["spicy", "savory", "crispy"]
+      flavor_profile: ["spicy", "savory", "crispy"],
+      restaurantId: 1
     },
     { 
       name: "Double Patty Burger",
@@ -102,7 +109,8 @@ const menuItems = {
       category: "American",
       is_discounted: false,
       discount_amount: null,
-      flavor_profile: ["savory", "meaty", "rich"]
+      flavor_profile: ["savory", "meaty", "rich"],
+      restaurantId: 1
     }
   ],
   "Chinese & Fast Food": [

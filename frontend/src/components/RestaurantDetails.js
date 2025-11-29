@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Loading from './Loading';
 
@@ -7,6 +7,7 @@ const API_URL = 'http://localhost:3005/api/restaurants';
 
 function RestaurantDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,22 +15,21 @@ function RestaurantDetails() {
   const [cutlery, setCutlery] = useState(false);
 
   useEffect(() => {
+    const fetchRestaurant = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(`${API_URL}/${id}`);
+        setRestaurant(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching restaurant:', err);
+        setError(err.message || 'Failed to load restaurant details');
+        setLoading(false);
+      }
+    };
     fetchRestaurant();
   }, [id]);
-
-  const fetchRestaurant = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get(`${API_URL}/${id}`);
-      setRestaurant(response.data);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching restaurant:', err);
-      setError(err.message || 'Failed to load restaurant details');
-      setLoading(false);
-    }
-  };
 
   const handleQuantityChange = (itemName, delta) => {
     setCart(prev => {
@@ -56,6 +56,12 @@ function RestaurantDetails() {
       acc[category].push(item);
       return acc;
     }, {});
+  };
+
+  const handleCheckout = () => {
+    // Save cart to localStorage
+    localStorage.setItem('cartItems', JSON.stringify(cart));
+    navigate('/checkout');
   };
 
   if (loading) return <Loading />;
@@ -206,8 +212,11 @@ function RestaurantDetails() {
                     </div>
                   </div>
 
-                  <button className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold hover:bg-orange-600 transition">
-                    Checkout
+                  <button 
+                    onClick={handleCheckout}
+                    className="w-full bg-orange-500 text-white py-3 rounded-lg font-bold hover:bg-orange-600 transition"
+                  >
+                    Proceed to Checkout
                   </button>
                 </>
               )}

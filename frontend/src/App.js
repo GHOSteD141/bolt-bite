@@ -1,27 +1,27 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import EnhancedNavbar from './components/EnhancedNavbar';
-import Footer from './components/Footer';
+import Navbar from './components/Navbar';
 import RestaurantList from './components/RestaurantList';
 import RestaurantDetails from './components/RestaurantDetails';
-import ErrorBoundary from './components/ErrorBoundary';
+import Checkout from './components/Checkout';
 import Support from './components/Support';
+import ErrorBoundary from './components/ErrorBoundary';
 import './styles/components.css';
 
 function App() {
   return (
     <Router>
       <div className="App">
-        <EnhancedNavbar />
+        <Navbar />
         <ErrorBoundary>
-          <main className="main-content">
+          <main>
             <Routes>
               <Route path="/" element={<RestaurantList />} />
               <Route path="/restaurant/:id" element={<RestaurantDetails />} />
+              <Route path="/checkout" element={<Checkout />} />
             </Routes>
           </main>
         </ErrorBoundary>
-        <Footer />
         <Support />
       </div>
     </Router>

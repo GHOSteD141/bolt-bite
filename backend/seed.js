@@ -1,41 +1,47 @@
-const mongoose = require('mongoose');
-mongoose.set('strictQuery', true);
-const csv = require('csv-parser');
 const fs = require('fs');
+const csv = require('csv-parser');
+const mongoose = require('mongoose');
 const Restaurant = require('./models/restaurant.cjs');
-const path = require('path');
-const menuItems = require('./data/menu');
+const { menuItems } = require('./data/menu');
 
-const dbURI = 'mongodb://localhost:27017/boltbite';
-// Update CSV file path to use the local data directory
-const csvFilePath = path.join(__dirname, 'data', 'restaurants.csv');
+mongoose.set('strictQuery', false);
 
-mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log('Connected to MongoDB...');
-    console.log('Starting to seed database...');
-    seedDatabase();
-  })
-  .catch(err => {
-    console.error('Failed to connect to MongoDB:', err.message);
-    process.exit(1);
-  });
+mongoose.connect('mongodb://127.0.0.1:27017/boltbite', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  family: 4
+})
+.then(() => {
+  console.log('Connected to MongoDB...');
+  seedDatabase();
+})
+.catch(err => console.error('MongoDB connection error:', err));
 
 async function seedDatabase() {
   try {
-    console.log('Reading CSV file from:', csvFilePath);
+    // Clear existing data
     await Restaurant.deleteMany({});
-    console.log('Existing data cleared...');
+    console.log('Cleared existing restaurants');
 
-    const results = [];
-    fs.createReadStream(csvFilePath)
+    const restaurants = [];
+    
+    // Read CSV and create restaurants
+    fs.createReadStream(__dirname + '/data/restaurants.csv')
       .pipe(csv())
-      .on('data', (data) => results.push(data))
-      .on('end', async () => {
-        const restaurantData = results.map(row => ({
+      .on('data', (row) => {
+        const menuCategory = row.Cuisines.split(',')[0].trim();
+        let restaurantMenu = menuItems[menuCategory] || menuItems["Pizzas & Burgers"];
+        
+        // Pizza Paradise gets only Pizzas & Burgers
+        if (row.RestaurantID == 1) {
+          restaurantMenu = menuItems["Pizzas & Burgers"];
+        }
+        
+        restaurants.push({
           restaurantId: parseInt(row.RestaurantID),
           name: row.RestaurantName,
           cuisines: row.Cuisines,
+          imageUrl: row.ImageURL,
           averageCostForTwo: parseInt(row.AverageCostForTwo),
           currency: row.Currency,
           hasTableBooking: row.HasTableBooking === 'Yes',
@@ -43,29 +49,25 @@ async function seedDatabase() {
           aggregateRating: parseFloat(row.AggregateRating),
           ratingText: row.RatingText,
           votes: parseInt(row.Votes),
-          popularDishes: row.PopularDishes ? row.PopularDishes.split(',').map(dish => dish.trim()) : [],
-          menu: Object.entries(menuItems).flatMap(([category, items]) => 
-            items.map(item => ({
-              ...item,
-              category,
-              description: `Delicious ${item.name}`,
-              image: `${item.name.toLowerCase().replace(/ /g, '-')}.jpg`
-            }))
-          )
-        }));
-
-        await Restaurant.insertMany(restaurantData);
-        console.log(`Successfully inserted ${restaurantData.length} restaurants with menus!`);
-        mongoose.connection.close();
+          menu: restaurantMenu
+        });
       })
-      .on('error', (error) => {
-        console.error('Error reading CSV:', error);
+      .on('end', async () => {
+        try {
+          await Restaurant.insertMany(restaurants);
+          console.log(`✅ Successfully seeded ${restaurants.length} restaurants with images!`);
+          mongoose.connection.close();
+        } catch (err) {
+          console.error('Error inserting restaurants:', err);
+          mongoose.connection.close();
+        }
+      })
+      .on('error', (err) => {
+        console.error('CSV parse error:', err);
         mongoose.connection.close();
-        process.exit(1);
       });
-  } catch (error) {
-    console.error('Error seeding database:', error);
+  } catch (err) {
+    console.error('Seed error:', err);
     mongoose.connection.close();
-    process.exit(1);
   }
 }
