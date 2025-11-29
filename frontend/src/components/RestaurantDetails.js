@@ -34,15 +34,30 @@ function RestaurantDetails() {
   const handleQuantityChange = (itemName, delta) => {
     setCart(prev => {
       const newQty = (prev[itemName] || 0) + delta;
-      return newQty > 0 ? { ...prev, [itemName]: newQty } : { ...prev };
+      if (newQty > 0) {
+        const item = restaurant.menu?.find(m => m.name === itemName);
+        return {
+          ...prev,
+          [itemName]: {
+            quantity: newQty,
+            price: item?.price || 0,
+            image: item?.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
+            is_discounted: item?.is_discounted || false,
+            discount_amount: item?.discount_amount || null
+          }
+        };
+      } else {
+        const newCart = { ...prev };
+        delete newCart[itemName];
+        return newCart;
+      }
     });
   };
 
   const calculateTotal = () => {
     if (!restaurant) return 0;
-    return Object.entries(cart).reduce((total, [itemName, quantity]) => {
-      const item = restaurant.menu?.find(m => m.name === itemName);
-      return total + (item?.price || 0) * quantity;
+    return Object.entries(cart).reduce((total, [itemName, itemData]) => {
+      return total + (itemData.price || 0) * (itemData.quantity || 0);
     }, 0);
   };
 
@@ -60,7 +75,11 @@ function RestaurantDetails() {
 
   const handleCheckout = () => {
     // Save cart to localStorage
-    localStorage.setItem('cartItems', JSON.stringify(cart));
+    const cartForStorage = Object.entries(cart).map(([name, data]) => ({
+      name,
+      ...data
+    }));
+    localStorage.setItem('cartItems', JSON.stringify(cartForStorage));
     navigate('/checkout');
   };
 
@@ -103,7 +122,21 @@ function RestaurantDetails() {
                     </h3>
                     <div className="space-y-3">
                       {Array.isArray(items) && items.map(item => (
-                        <div key={item.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                        <div key={item.name} className="flex gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                          
+                          {/* Food Image - Top Left */}
+                          <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
+                            <img 
+                              src={item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop'}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop';
+                              }}
+                            />
+                          </div>
+
+                          {/* Item Details - Middle */}
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <h4 className="font-semibold text-gray-900">{item.name}</h4>
@@ -122,8 +155,8 @@ function RestaurantDetails() {
                             </div>
                           </div>
 
-                          {/* Quantity Selector */}
-                          <div className="flex items-center gap-2 ml-4">
+                          {/* Quantity Selector - Right */}
+                          <div className="flex items-center gap-2">
                             {cart[item.name] ? (
                               <div className="flex items-center gap-2 bg-orange-500 text-white rounded-lg px-2 py-1">
                                 <button
@@ -132,7 +165,7 @@ function RestaurantDetails() {
                                 >
                                   −
                                 </button>
-                                <span className="w-6 text-center">{cart[item.name]}</span>
+                                <span className="w-6 text-center">{cart[item.name].quantity}</span>
                                 <button
                                   onClick={() => handleQuantityChange(item.name, 1)}
                                   className="hover:opacity-80"
@@ -168,19 +201,16 @@ function RestaurantDetails() {
               ) : (
                 <>
                   <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                    {Object.entries(cart).map(([itemName, quantity]) => {
-                      const item = restaurant.menu?.find(m => m.name === itemName);
-                      return (
-                        <div key={itemName} className="flex justify-between text-sm border-b pb-2">
-                          <span className="text-gray-700">
-                            {itemName} × {quantity}
-                          </span>
-                          <span className="font-semibold text-gray-900">
-                            ₹{(item?.price || 0) * quantity}
-                          </span>
-                        </div>
-                      );
-                    })}
+                    {Object.entries(cart).map(([itemName, itemData]) => (
+                      <div key={itemName} className="flex justify-between text-sm border-b pb-2">
+                        <span className="text-gray-700">
+                          {itemName} × {itemData.quantity}
+                        </span>
+                        <span className="font-semibold text-gray-900">
+                          ₹{(itemData.price || 0) * (itemData.quantity || 0)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Cutlery Option */}

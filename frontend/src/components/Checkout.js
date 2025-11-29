@@ -79,12 +79,37 @@ function Checkout() {
                   <h2 className="text-2xl font-bold mb-6">Order Review</h2>
                   <div className="space-y-4 mb-6">
                     {Object.entries(cartItems).map(([itemName, item]) => (
-                      <div key={itemName} className="flex justify-between items-center border-b pb-4">
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{itemName}</h3>
-                          <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                      <div key={itemName} className="flex items-center justify-between border-b pb-4">
+                        {/* Image and Text Container */}
+                        <div className="flex items-center gap-4 flex-1">
+                          {/* Small Image */}
+                          <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
+                            <img 
+                              src={item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop'}
+                              alt={itemName}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop';
+                              }}
+                            />
+                          </div>
+                          
+                          {/* Text Content */}
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900">{itemName}</h3>
+                            <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                            {item.is_discounted && (
+                              <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full inline-block mt-1">
+                                🔥 {item.discount_amount}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <span className="font-semibold text-gray-900">₹{item.price * item.quantity}</span>
+
+                        {/* Price */}
+                        <span className="font-semibold text-gray-900 whitespace-nowrap ml-4">
+                          ₹{item.price * item.quantity}
+                        </span>
                       </div>
                     ))}
                   </div>
