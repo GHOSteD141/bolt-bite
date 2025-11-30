@@ -8,6 +8,14 @@ const ChatModal = ({ isOpen, onClose }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const chatRef = useRef(null);
 
+  // Quick reply options
+  const quickReplies = [
+    'Show discounts',
+    'What\'s popular?',
+    'Help with order',
+    'Menu'
+  ];
+
   useEffect(() => {
     // authenticate when modal opens (inline to avoid missing-hook-deps warning)
     if (!isOpen || isAuthenticated) return;

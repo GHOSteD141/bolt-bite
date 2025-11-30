@@ -26,6 +26,10 @@ function RestaurantCard({ restaurant, onClick }) {
     return 'https://source.unsplash.com/800x600/?food,restaurant';
   };
 
+  // Fallback image if none provided
+  const imageUrl = (restaurant.imageUrl || restaurant.image || 
+    'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop') + `?v=${Date.now()}`;
+
   // Check if restaurant is popular (rating > 4.2 or votes > 1500)
   const isPopular = restaurant => {
     const rating = restaurant.rating || restaurant.aggregateRating || 4.0;

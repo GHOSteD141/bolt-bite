@@ -30,6 +30,7 @@ async function seedDatabase() {
       .pipe(csv())
       .on('data', (row) => {
         console.log(`📍 Processing: ${row.RestaurantName}`);
+        console.log(`   Image URL from CSV: ${row.ImageURL}`);
         
         const menuCategory = row.Cuisines.split(',')[0].trim();
         let restaurantMenu = menuItems[menuCategory] || menuItems["Pizzas & Burgers"];
@@ -43,7 +44,7 @@ async function seedDatabase() {
           restaurantId: parseInt(row.RestaurantID),
           name: row.RestaurantName,
           cuisines: row.Cuisines,
-          imageUrl: row.ImageURL,
+          imageUrl: row.ImageURL || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=400&fit=crop',
           averageCostForTwo: parseInt(row.AverageCostForTwo),
           currency: row.Currency,
           hasTableBooking: row.HasTableBooking === 'Yes',
@@ -65,16 +66,28 @@ async function seedDatabase() {
             return;
           }
           
+          // Delete old data first
+          await Restaurant.deleteMany({});
+          console.log('🗑️  Cleared old data');
+          
           const result = await Restaurant.insertMany(restaurants);
           console.log(`\n✅ Successfully seeded ${result.length} restaurants with images!`);
           
-          // Verify data in database
+          // Wait a moment for DB to sync
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Now verify - check the newly inserted data
           const count = await Restaurant.countDocuments();
           console.log(`📊 Total restaurants in DB: ${count}`);
           
-          const pizzaParadise = await Restaurant.findOne({ restaurantId: 1 });
-          console.log(`🍕 Pizza Paradise image: ${pizzaParadise?.imageUrl}`);
+          // Get fresh data from DB
+          const allRestaurants = await Restaurant.find({});
+          console.log('\n📋 Restaurants with images:');
+          allRestaurants.forEach(r => {
+            console.log(`  🍽️  ${r.name}: ${r.imageUrl}`);
+          });
           
+          console.log('\n✅ Seeding complete!');
           mongoose.connection.close();
         } catch (err) {
           console.error('❌ Error inserting restaurants:', err);
