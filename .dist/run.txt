@@ -1,6 +1,9 @@
+
 cd "C:\Users\SHREYAJIT BEURA\OneDrive\Documents\GitHub\bolt-bite\backend"
 npm start
 
 cd "C:\Users\SHREYAJIT BEURA\OneDrive\Documents\GitHub\bolt-bite\frontend"
 npm start
 
+cd "C:\Users\SHREYAJIT BEURA\OneDrive\Documents\GitHub\bolt-bite\backend"
+node seed.js

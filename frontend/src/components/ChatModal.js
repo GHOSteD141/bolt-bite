@@ -6,9 +6,6 @@ const ChatModal = ({ isOpen, onClose }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [sessionId, setSessionId] = useState(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-  const [menuContext, setMenuContext] = useState(null);
-  const [quickReplies, setQuickReplies] = useState([]);
   const chatRef = useRef(null);
 
   useEffect(() => {
@@ -56,73 +53,22 @@ const ChatModal = ({ isOpen, onClose }) => {
     const userMessage = inputValue.trim();
     setInputValue('');
     setIsLoading(true);
-
-    // Add user message
     appendMessage(userMessage, 'user');
 
     try {
       const response = await fetch('http://localhost:3005/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          sessionId
-        })
+        body: JSON.stringify({ message: userMessage })
       });
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = await response.json();
-
-      // Update menu context if provided
-      if (data.menuContext) {
-        setMenuContext(data.menuContext);
-      }
-
-      // Add main AI response
-      appendMessage(data.response || 'No response', 'agent', 'text', data);
-
-      // Handle discount highlights
-      if (data.menuContext?.discountedItems?.length > 0) {
-        data.menuContext.discountedItems.slice(0, 3).forEach(item => {
-          setTimeout(() => appendDiscountHighlight(item), 500);
-        });
-      }
-
-      // Handle pairing suggestions
-      if (data.pairings && data.pairings.length > 0) {
-        setTimeout(() => appendPairingSuggestion(
-          data.suggestions?.[0] || { name: 'your dish' },
-          data.pairings
-        ), 1000);
-      }
-
-      // Update quick replies based on suggestions
-      if (data.suggestions && data.suggestions.length > 0) {
-        const quickActions = [
-          'Show discounted items',
-          'What pairs well with ' + (data.suggestions[0]?.name || 'this'),
-          'Tell me more about ' + (data.suggestions[0]?.name || 'it')
-        ];
-        setQuickReplies(quickActions);
-      } else {
-        setQuickReplies([
-          'What\'s on discount?',
-          'Show me the menu',
-          'Recommend something spicy'
-        ]);
-      }
-
+      appendMessage(data.response || 'No response', 'agent');
     } catch (error) {
       console.error('Chat error:', error);
-      appendMessage('Server connection error. Please try again.', 'agent', 'error');
-
-      // Set fallback quick replies
-      setQuickReplies([
-        'Try again',
-        'Show menu',
-        'Contact support'
-      ]);
+      appendMessage('Server connection error. Please try again.', 'agent');
     } finally {
       setIsLoading(false);
     }
@@ -165,17 +111,6 @@ const ChatModal = ({ isOpen, onClose }) => {
       text: `Great choice! Here's what pairs well with ${mainItem.name}:`,
       sender: 'agent',
       data: { mainItem, suggestions },
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, message]);
-  };
-
-  const appendMenuShowcase = (items, highlightDiscounts = true) => {
-    const message = {
-      type: 'menu_showcase',
-      text: `Here are our available options:`,
-      sender: 'agent',
-      data: { items, highlightDiscounts },
       timestamp: new Date()
     };
     setMessages(prev => [...prev, message]);
@@ -231,25 +166,6 @@ const ChatModal = ({ isOpen, onClose }) => {
                         )}
                       </div>
                       <div className="pairing-reason">{suggestion.reason}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {msg.type === 'menu_showcase' && (
-              <div className="menu-showcase">
-                <div className="showcase-text">{msg.text}</div>
-                <div className="showcase-items">
-                  {msg.data.items.slice(0, 6).map((item, mIdx) => (
-                    <div key={mIdx} className={`showcase-item ${item.is_discounted ? 'discounted' : ''}`}>
-                      <div className="item-name">{item.name}</div>
-                      <div className="item-info">
-                        <span className="item-price">₹{item.price}</span>
-                        {item.is_discounted && msg.data.highlightDiscounts && (
-                          <div className="item-discount">{item.discount_amount}</div>
-                        )}
-                      </div>
-                      <div className="item-category">{item.category}</div>
                     </div>
                   ))}
                 </div>
