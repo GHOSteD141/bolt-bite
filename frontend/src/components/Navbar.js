@@ -3,17 +3,15 @@ import { Link } from 'react-router-dom';
 
 function Navbar() {
   return (
-    <nav className="navbar">
-      <div className="container nav-container">
-        <Link className="brand" to="/">Bold Bite</Link>
-        <div className="nav-links">
-          <Link to="/">Restaurants</Link>
-          <Link to="/howitworks">How it works</Link>
-          <Link to="/about">About</Link>
-        </div>
-        <div className="nav-actions">
-          <Link to="/login" style={{ marginRight: 12 }}>Log in</Link>
-          <Link to="/signup" className="btn-add" style={{ padding: '8px 14px', background: 'var(--accent)', borderRadius: 10 }}>Sign up</Link>
+    <nav className="bg-white shadow-sm sticky top-0 z-40">
+      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+        <Link to="/" className="text-2xl font-bold text-orange-600">🍕 Bolt Bite</Link>
+        
+        <div className="flex gap-6 items-center">
+          <Link to="/" className="text-gray-700 hover:text-orange-600 font-medium">Home</Link>
+          <Link to="/how-it-works" className="text-gray-700 hover:text-orange-600 font-medium">How It Works</Link>
+          <Link to="/about" className="text-gray-700 hover:text-orange-600 font-medium">About</Link>
+          <Link to="/auth" className="bg-orange-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-orange-600">Login</Link>
         </div>
       </div>
     </nav>
