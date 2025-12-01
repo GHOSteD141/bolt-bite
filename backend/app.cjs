@@ -92,7 +92,7 @@ app.get('/api/recommendations/:itemName', (req, res) => {
 // POST /api/chat - AI chat endpoint
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, includeDiscounts } = req.body;
     
     if (!message || typeof message !== 'string') {
       return res.status(400).json({
@@ -101,7 +101,7 @@ app.post('/api/chat', async (req, res) => {
       });
     }
 
-    const response = await supportAgent.generateResponse(message);
+    const response = await supportAgent.generateResponse(message, includeDiscounts || false);
     const discountedItems = cmsAgent.getDiscountedItems();
 
     res.json({
