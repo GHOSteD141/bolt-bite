@@ -18,7 +18,7 @@ const menuItems = {
       price: 399,
       isVeg: true,
       description: "Loaded with fresh vegetables",
-      image: "https://images.unsplash.com/photo-1505521585350-967ad1b3106d?w=400&h=300&fit=crop&q=80",
+      image: "https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=400&h=300&fit=crop&q=80",
       spiceLevel: "medium",
       preparation: "25-30 mins",
       category: "Italian",
