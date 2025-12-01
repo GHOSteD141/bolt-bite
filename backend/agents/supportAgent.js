@@ -29,10 +29,10 @@ class SupportAgent {
   /**
    * Main response generation method
    * @param {string} userMessage - User's message
-   * @param {string} sessionId - Optional session identifier
+   * @param {boolean} includeDiscounts - Whether to include discounts in the response
    * @returns {Object} AI-generated response with context
    */
-  async generateResponse(userMessage, sessionId = null) {
+  async generateResponse(userMessage, includeDiscounts = false) {
     // Check cache first
     const cacheKey = userMessage.toLowerCase();
     const cached = this.responseCache.get(cacheKey);
@@ -44,13 +44,13 @@ class SupportAgent {
     try {
       if (!this.geminiEnabled) {
         console.log('⚠️ Gemini disabled, using fallback response');
-        return this.getFallbackResponse(userMessage);
+        return this.getFallbackResponse(userMessage, includeDiscounts);
       }
 
       const menuData = cmsAgent.getFullMenu();
       const discountedItems = cmsAgent.getDiscountedItems();
       
-      const systemPrompt = this.constructGeminiPrompt(menuData, discountedItems, userMessage);
+      const systemPrompt = this.constructGeminiPrompt(menuData, discountedItems, userMessage, includeDiscounts);
       
       console.log('🚀 Sending request to Gemini API...');
       const result = await this.model.generateContent(systemPrompt);
@@ -68,7 +68,7 @@ class SupportAgent {
     } catch (error) {
       console.error('❌ Gemini API error:', error.message);
       console.log('🔄 Falling back to hardcoded response');
-      return this.getFallbackResponse(userMessage);
+      return this.getFallbackResponse(userMessage, includeDiscounts);
     }
   }
 
@@ -77,25 +77,35 @@ class SupportAgent {
    * @param {Object} menuData - Menu data from CMS Agent
    * @param {Object} discountedItems - Discounted items data from CMS Agent
    * @param {string} userMessage - User's message
+   * @param {boolean} includeDiscounts - Whether to include discounts in the prompt
    * @returns {string} Complete prompt for Gemini
    */
-  constructGeminiPrompt(menuData, discountedItems, userMessage) {
-    const systemInstruction = `You are a helpful food concierge for BoltBite food delivery service. Your role is to:
-1. Help customers find delicious food from our menu
-2. AGGRESSIVELY highlight discounted items (use 🔥 emoji and bold formatting)
-3. Make smart pairing suggestions based on flavor profiles
-4. Be friendly and enthusiastic about our offers
-5. Keep responses concise but helpful (under 150 words)
+  constructGeminiPrompt(menuData, discountedItems, userMessage, includeDiscounts) {
+    let discountSection = '';
+    if (includeDiscounts) {
+      discountSection = `
 
-Current Menu Data:
-${JSON.stringify(menuData, null, 2)}
+Current Discounts (HIGHLIGHT THESE AGGRESSIVELY):
+${discountedItems.items.map(item => `- ${item.name}: 🔥 ${item.discount_amount} (₹${item.price})`).join('\n')}`;
+    }
 
-Discounted Items (HIGHLIGHT THESE):
-${discountedItems.items.map(item => `- ${item.name}: 🔥 ${item.discount_amount} (₹${item.price})`).join('\n')}
+    const systemInstruction = `You are a friendly and helpful AI assistant for Bolt Bite food delivery service. You can answer:
+1. Questions about our food menu and recommendations
+2. General questions about food, cooking, health, etc.
+3. Delivery-related inquiries
+4. Any casual conversation topics
 
-Customer Message: ${userMessage}
+Your personality: Friendly, helpful, concise, and enthusiastic about food! Use emojis appropriately.
 
-Please provide a helpful response that aggressively highlights discounts and makes smart pairing suggestions.`;
+IMPORTANT: Only mention discounts if the user specifically asks about them OR if includeDiscounts is true.
+Keep responses under 150 words to maintain a clean chat.
+
+Menu Data Available:
+${JSON.stringify(menuData, null, 2)}${discountSection}
+
+User Message: ${userMessage}
+
+Provide helpful, friendly responses. If they ask about food recommendations, suggest from our menu.`;
 
     return systemInstruction;
   }
@@ -103,30 +113,32 @@ Please provide a helpful response that aggressively highlights discounts and mak
   /**
    * Generate fallback response when AI is unavailable
    * @param {string} userMessage - User's message
+   * @param {boolean} includeDiscounts - Whether to include discounts in the fallback response
    * @returns {string} Basic response without AI
    */
-  getFallbackResponse(userMessage) {
+  getFallbackResponse(userMessage, includeDiscounts = false) {
     const menuSummary = cmsAgent.getMenuSummary();
     const discountedItems = cmsAgent.getDiscountedItems();
+    const lowerMessage = userMessage.toLowerCase();
 
-    let response = "Hello! 👋 I'm your BoltBite food concierge. ";
-
-    if (userMessage.toLowerCase().includes('discount') || userMessage.toLowerCase().includes('offer')) {
-      response += `\n\n🔥 **HOT DEALS RIGHT NOW:** We have ${discountedItems.count} items on discount!\n`;
-      discountedItems.items.slice(0, 5).forEach(item => {
-        response += `\n- **${item.name}** - 🔥 ${item.discount_amount}\n  Originally ₹${item.price}\n`;
-      });
-    } else if (userMessage.toLowerCase().includes('menu')) {
-      response += `\n\nWe have **${menuSummary.totalItems}** amazing dishes across these categories:\n`;
-      menuSummary.categories.forEach(cat => {
-        response += `- ${cat}\n`;
-      });
-      response += `\n🔥 **${discountedItems.count} items currently on discount!**`;
-    } else {
-      response += `\n\nWhat would you like to explore?\n- Browse our menu\n- Check out discounted items\n- Get pairing suggestions\n\n🔥 **Don't miss:** We have ${discountedItems.count} amazing deals running right now!`;
+    // Handle discount requests
+    if (includeDiscounts || lowerMessage.includes('discount')) {
+      return `🔥 **Current Hot Deals:**\n${discountedItems.items.slice(0, 5).map(item => 
+        `- ${item.name}: ${item.discount_amount} (₹${item.price})`).join('\n')}\n\nDon't miss out! 🎉`;
     }
 
-    return response;
+    // Handle menu/recommendation questions
+    if (lowerMessage.includes('menu') || lowerMessage.includes('recommend') || lowerMessage.includes('suggest')) {
+      return `We have amazing options across ${menuSummary.categories.length} categories!\n\n${menuSummary.categories.slice(0, 3).map(cat => `🍽️ ${cat}`).join('\n')}\n\nWhat sounds good to you? 😋`;
+    }
+
+    // Handle general food questions
+    if (lowerMessage.includes('pizza') || lowerMessage.includes('burger') || lowerMessage.includes('food')) {
+      return `Delicious choice! 🍕 We have amazing pizzas and burgers. What would you like to know more about?`;
+    }
+
+    // Default friendly response
+    return `Hey there! 👋 I'm here to help. You can ask me about:\n- Our menu & recommendations\n- Food suggestions\n- General questions\n- Anything else!\n\nWhat can I help with? 😊`;
   }
 }
 
