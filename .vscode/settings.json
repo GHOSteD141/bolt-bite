@@ -1,53 +1,56 @@
 {
-  // Keep existing C++ settings
-  "C_Cpp_Runner.cCompilerPath": "gcc",
-  "C_Cpp_Runner.cppCompilerPath": "g++",
-  "C_Cpp_Runner.debuggerPath": "gdb",
-  
-  // Disable heavy features that cause crashes
+  // Disable all heavy features
   "extensions.ignoreRecommendations": true,
-  "telemetry.telemetryLevel": "off",  
+  "telemetry.telemetryLevel": "off",
   
-  // Performance optimizations
-  "editor.maxTokenizationLineLength": 2000,
+  // Disable language servers that cause crashes
+  "typescript.enablePromptUseWorkspaceTsdk": false,
+  "typescript.tsserver.maxTsServerMemory": 256,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  
+  // Minimal editor features
+  "editor.fontLigatures": false,
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.autoSave": "off",
+  "editor.wordBasedSuggestions": "off",
+  "editor.suggest.maxVisibleSuggestions": 5,
+  "editor.parameterHints.enabled": false,
+  
+  // Disable validation
+  "json.schemaValidation": "off",
+  "json.maxItemsComputed": 100,
   "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features",
-    "editor.formatOnSave": false
+    "editor.defaultFormatter": null
   },
   "[javascript]": {
-    "editor.formatOnSave": false
+    "editor.defaultFormatter": null
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": null
   },
   
-  // Only disable the problematic schema validation
-  "json.schemaValidation": "off",
-  "json.maxItemsComputed": 5000,
-  
-  // File exclusions to reduce indexing
+  // Reduce file indexing
   "files.exclude": {
     "**/node_modules": true,
-    "**/.DS_Store": true,
     "**/.git": true,
     "**/dist": true,
-    "**/build": true
+    "**/.DS_Store": true
   },
-  
   "search.exclude": {
     "**/node_modules": true,
-    "**/dist": true,
-    "**/build": true,
     "**/.git": true
   },
   
-  // Disable unused features
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  },
-  "editor.formatOnSave": false,
-  "editor.autoSave": "off",
+  // Disable extensions
+  "extensions.recommendations": [],
   
-    // Reduce memory usage
-    "editor.wordBasedSuggestions": "off",
-    "[typescript]": {
-      "editor.defaultFormatter": "vscode.typescript-language-features"
-    }
+  // Minimal git
+  "git.enabled": false,
+  
+  // No code analysis
+  "eslint.enable": false,
+  "[css]": {
+    "editor.defaultFormatter": null
   }
+}
