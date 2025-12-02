@@ -20,15 +20,20 @@ function RestaurantCard({ restaurant, onClick }) {
   // Get image source with fallback
   const getImageSrc = () => {
     if (imageError) return 'https://source.unsplash.com/800x600/?food,restaurant';
-    if (restaurant.ImageURL) return restaurant.ImageURL;
-    if (restaurant.image) return restaurant.image;
-    if (restaurant.imageUrl) return restaurant.imageUrl;
+    if (restaurant.ImageURL) return restaurant.ImageURL + `?v=${Date.now()}`;
+    if (restaurant.image) return restaurant.image + `?v=${Date.now()}`;
+    if (restaurant.imageUrl) return restaurant.imageUrl + `?v=${Date.now()}`;
+    // If none provided, return a category-aware placeholder
+    const cuisines = restaurant.cuisines || restaurant.cuisine || '';
+    const cuisine = Array.isArray(cuisines) ? cuisines[0] : (cuisines.split ? cuisines.split(',')[0] : 'food');
+    if (cuisine.toLowerCase().includes('pizza') || cuisine.toLowerCase().includes('italian')) return 'https://source.unsplash.com/800x600/?pizza';
+    if (cuisine.toLowerCase().includes('chinese')) return 'https://source.unsplash.com/800x600/?chinese-food';
+    if (cuisine.toLowerCase().includes('american') || cuisine.toLowerCase().includes('burger')) return 'https://source.unsplash.com/800x600/?burger';
+    if (cuisine.toLowerCase().includes('indian')) return 'https://source.unsplash.com/800x600/?indian-food';
     return 'https://source.unsplash.com/800x600/?food,restaurant';
   };
 
-  // Fallback image if none provided
-  const imageUrl = (restaurant.imageUrl || restaurant.image || 
-    'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop') + `?v=${Date.now()}`;
+  // URL is generated via getImageSrc, so remove legacy 'imageUrl' variable
 
   // Check if restaurant is popular (rating > 4.2 or votes > 1500)
   const isPopular = restaurant => {
@@ -89,6 +94,8 @@ function RestaurantCard({ restaurant, onClick }) {
         {/* Loading skeleton */}
         {!imageLoaded && <div className="image-skeleton"></div>}
 
+        {/* Debug: log the restaurant image used */}
+        {console.log('Restaurant image source:', getImageSrc())}
         {/* Restaurant image */}
         <img
           className="restaurant-image"

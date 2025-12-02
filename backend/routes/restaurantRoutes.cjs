@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
         // Add default images if not present
         const enrichedRestaurants = restaurants.map(r => ({
             ...r,
-            imageUrl: r.imageUrl || `https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop&q=80`
+            imageUrl: r.imageUrl || `https://source.unsplash.com/400x300/?${encodeURIComponent(r.Cuisines || 'food')}`
         }));
         res.json(enrichedRestaurants);
     } catch (err) {

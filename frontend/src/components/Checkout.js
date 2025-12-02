@@ -18,8 +18,15 @@ function Checkout() {
     upiId: ''
   });
 
-  const cartItems = JSON.parse(localStorage.getItem('cartItems')) || {};
-  const total = Object.values(cartItems).reduce((sum, item) => sum + item.price, 0);
+  const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+  
+  // Calculate totals - handle both array and object formats
+  const itemsArray = Array.isArray(cartItems) ? cartItems : Object.entries(cartItems).map(([name, data]) => ({
+    name,
+    ...data
+  }));
+  
+  const total = itemsArray.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
   const deliveryFee = 40;
   const tax = Math.round(total * 0.05);
   const grandTotal = total + deliveryFee + tax;
@@ -52,6 +59,17 @@ function Checkout() {
     }
   };
 
+  const getPlaceholderImage = (category, isVeg) => {
+    if (!category) category = '';
+    const c = category.toLowerCase();
+    if (c.includes('pizza') || c.includes('italian')) return 'https://source.unsplash.com/400x300/?pizza';
+    if (c.includes('chinese')) return 'https://source.unsplash.com/400x300/?chinese-food';
+    if (c.includes('burger') || c.includes('american')) return 'https://source.unsplash.com/400x300/?burger';
+    if (c.includes('dessert')) return 'https://source.unsplash.com/400x300/?dessert';
+    if (c.includes('momos')) return 'https://source.unsplash.com/400x300/?momos';
+    return isVeg ? 'https://source.unsplash.com/400x300/?vegetarian' : 'https://source.unsplash.com/400x300/?chicken';
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-6xl">
@@ -78,25 +96,25 @@ function Checkout() {
                 <div>
                   <h2 className="text-2xl font-bold mb-6">Order Review</h2>
                   <div className="space-y-4 mb-6">
-                    {Object.entries(cartItems).map(([itemName, item]) => (
-                      <div key={itemName} className="flex items-center justify-between border-b pb-4">
+                    {itemsArray.map((item) => (
+                      <div key={item.name} className="flex items-center justify-between border-b pb-4">
                         {/* Image and Text Container */}
                         <div className="flex items-center gap-4 flex-1">
                           {/* Small Image */}
                           <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
                             <img 
-                              src={item.image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop'}
-                              alt={itemName}
+                              src={(item.image || getPlaceholderImage(item.category, item.isVeg)) + `?v=${Date.now()}`}
+                              alt={item.name}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.target.src = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop';
+                                e.target.src = getPlaceholderImage(item.category, item.isVeg);
                               }}
                             />
                           </div>
                           
                           {/* Text Content */}
                           <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900">{itemName}</h3>
+                            <h3 className="font-semibold text-gray-900">{item.name}</h3>
                             <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                             {item.is_discounted && (
                               <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full inline-block mt-1">

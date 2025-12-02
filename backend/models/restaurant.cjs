@@ -25,7 +25,7 @@ const restaurantSchema = new mongoose.Schema({
   },
   imageUrl: {
     type: String,
-    default: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=400&fit=crop'
+    default: 'https://source.unsplash.com/600x400/?food,restaurant'
   },
   averageCostForTwo: {
     type: Number,

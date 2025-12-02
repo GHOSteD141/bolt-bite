@@ -25,6 +25,17 @@ async function seedDatabase() {
 
     const restaurants = [];
     
+    // Helper to select placeholder restaurant image by category
+    function getCategoryPlaceholder(category) {
+      if (!category) return 'https://source.unsplash.com/600x400/?food';
+      const c = category.toLowerCase();
+      if (c.includes('pizza') || c.includes('italian')) return 'https://source.unsplash.com/600x400/?pizza';
+      if (c.includes('chinese')) return 'https://source.unsplash.com/600x400/?chinese-food';
+      if (c.includes('burger') || c.includes('american')) return 'https://source.unsplash.com/600x400/?burger';
+      if (c.includes('indian')) return 'https://source.unsplash.com/600x400/?indian-food';
+      return 'https://source.unsplash.com/600x400/?food';
+    }
+
     // Read CSV and create restaurants
     fs.createReadStream(__dirname + '/data/restaurants.csv')
       .pipe(csv())
@@ -44,7 +55,7 @@ async function seedDatabase() {
           restaurantId: parseInt(row.RestaurantID),
           name: row.RestaurantName,
           cuisines: row.Cuisines,
-          imageUrl: row.ImageURL || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=400&fit=crop',
+          imageUrl: row.ImageURL || getCategoryPlaceholder(menuCategory),
           averageCostForTwo: parseInt(row.AverageCostForTwo),
           currency: row.Currency,
           hasTableBooking: row.HasTableBooking === 'Yes',
@@ -82,9 +93,14 @@ async function seedDatabase() {
           
           // Get fresh data from DB
           const allRestaurants = await Restaurant.find({});
-          console.log('\n📋 Restaurants with images:');
+          console.log('\n📋 Restaurants with images and first 3 menu items:');
           allRestaurants.forEach(r => {
             console.log(`  🍽️  ${r.name}: ${r.imageUrl}`);
+            if (Array.isArray(r.menu) && r.menu.length > 0) {
+              r.menu.slice(0, 3).forEach(mi => {
+                console.log(`      - ${mi.name}: ${mi.image}`);
+              });
+            }
           });
           
           console.log('\n✅ Seeding complete!');
