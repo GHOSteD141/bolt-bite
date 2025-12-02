@@ -51,6 +51,23 @@ async function seedDatabase() {
           restaurantMenu = menuItems["Pizzas & Burgers"];
         }
         
+        // Map every menu item to a local SVG in `frontend/public/images` (restaurant image stays from CSV)
+        try {
+          function slugify(name) {
+            return (name || 'item').toString().toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/(^-|-$)/g, '')
+              .slice(0, 200);
+          }
+
+          restaurantMenu = restaurantMenu.map(mi => {
+            const slug = slugify(mi.name);
+            return { ...mi, image: `/images/${slug}.svg` };
+          });
+        } catch (e) {
+          console.warn('Menu image slugify failed for', row.RestaurantName, e);
+        }
+
         const restaurant = {
           restaurantId: parseInt(row.RestaurantID),
           name: row.RestaurantName,
