@@ -13,6 +13,7 @@ import Auth from './pages/Auth';
 import Restaurants from './pages/Restaurants';
 import AuthPage from './pages/AuthPage';
 import AboutPage from './pages/AboutPage';
+import FoodSearch from './pages/FoodSearch';
 import FooterPages from './pages/FooterPages';
 import ErrorBoundary from './components/ErrorBoundary';
 import './styles/components.css';
@@ -36,6 +37,7 @@ function App() {
               <Route path="/restaurants" element={<Restaurants />} />
               <Route path="/login" element={<AuthPage />} />
               <Route path="/about-us" element={<AboutPage />} />
+              <Route path="/food-search" element={<FoodSearch />} />
               
               {/* Help Routes */}
               <Route path="/help/faq" element={<FooterPages />} />
