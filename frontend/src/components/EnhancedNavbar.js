@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import EnhancedSearchBar from './EnhancedSearchBar';
 
 const EnhancedNavbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,9 +18,11 @@ const EnhancedNavbar = () => {
   }, []);
 
   const handleSearch = (searchParams) => {
-    // Handle search - you might want to navigate to search results or update state
-    console.log('Search params:', searchParams);
-    // This would typically navigate to a search results page or update the current view
+    // If EnhancedSearchBar submits { query }, navigate to home with query param
+    if (searchParams && searchParams.query) {
+      const q = encodeURIComponent(searchParams.query);
+      navigate(`/?q=${q}`);
+    }
   };
 
   const toggleMobileMenu = () => {

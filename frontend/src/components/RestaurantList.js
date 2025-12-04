@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Loading from './Loading';
 import RestaurantCard from './RestaurantCard';
+import { useLocation } from 'react-router-dom';
 
 const API_URL = 'http://localhost:3005/api/restaurants';
 
 function RestaurantList() {
   const [restaurants, setRestaurants] = useState([]);
+  const [foodItems, setFoodItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCuisine, setSelectedCuisine] = useState('');
+  const location = useLocation();
 
   useEffect(() => {
     fetchData();
@@ -20,12 +23,28 @@ function RestaurantList() {
     setLoading(true);
     setError(null);
     try {
-      let url = API_URL;
+      // If a query is provided, use the combined search endpoint to get
+      // both restaurants and food items. Otherwise fetch the default
+      // restaurants list.
       if (params.query) {
-        url += `/search/${encodeURIComponent(params.query)}`;
+        const q = encodeURIComponent(params.query);
+        const response = await axios.get(`http://localhost:3005/api/search/combined/${q}`);
+        const data = response.data;
+
+        // Backend returns `restaurants` and `foodItems`. Normalize restaurants
+        // to include `restaurantId` so existing components behave the same.
+        const normalizedRestaurants = (data.restaurants || []).map(r => ({
+          ...r,
+          restaurantId: r.id || r.restaurantId || r._id
+        }));
+
+        setRestaurants(normalizedRestaurants);
+        setFoodItems(data.foodItems || []);
+      } else {
+        const response = await axios.get(API_URL);
+        setRestaurants(response.data);
+        setFoodItems([]);
       }
-      const response = await axios.get(url);
-      setRestaurants(response.data);
       setLoading(false);
     } catch (err) {
       setError(err.message || 'Failed to fetch restaurants');
@@ -38,6 +57,16 @@ function RestaurantList() {
     fetchData({ query });
   };
 
+      // If a query parameter `q` is provided, run a combined search.
+      const params = new URLSearchParams(location.search);
+      const q = params.get('q');
+      if (q) {
+        setSearchQuery(q);
+        fetchData({ query: q });
+      } else {
+        fetchData();
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleCuisineFilter = (cuisine) => {
     setSelectedCuisine(cuisine);
     // Could add cuisine filtering here
@@ -154,6 +183,35 @@ function RestaurantList() {
           </div>
         </div>
       </section>
+      {/* If searching, show food item results */}
+      {foodItems && foodItems.length > 0 && (
+        <div className="bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto mb-6">
+            <h3 className="text-2xl font-semibold text-gray-900 mb-3">Food items matching "{searchQuery}"</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {foodItems.map(item => (
+                <div key={item.id} className="food-item-card bg-white rounded-lg shadow p-4">
+                  <div className="flex gap-4">
+                    <img src={item.image} alt={item.name} className="w-24 h-20 object-cover rounded-md" onError={(e)=>{e.target.src='/images/placeholder-food.jpg'}} />
+                    <div className="flex-1">
+                      <div className="font-semibold text-lg">{item.name}</div>
+                      <div className="text-sm text-gray-500">{item.restaurant}</div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <div className="text-orange-600 font-bold">₹{item.price}</div>
+                        {item.restaurantId ? (
+                          <a href={`/restaurant/${item.restaurantId}`} className="text-sm text-blue-600 hover:underline">View restaurant</a>
+                        ) : (
+                          <span className="text-sm text-gray-400">Various</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Restaurants Grid */}
       <div className="bg-white py-16 px-4 sm:px-6 lg:px-8">

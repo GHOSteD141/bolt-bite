@@ -38,6 +38,14 @@ app.get('/api/test', (req, res) => {
 const restaurantRoutes = require('./routes/restaurantRoutes.cjs');
 app.use('/api/restaurants', restaurantRoutes);
 
+// Use search routes (food items + restaurant combined search)
+try {
+  const searchRoutes = require('./routes/searchRoutes');
+  app.use('/api/search', searchRoutes);
+} catch (e) {
+  console.warn('Search routes not loaded:', e.message);
+}
+
 // GET /api/menu - Get full menu
 app.get('/api/menu', (req, res) => {
   try {

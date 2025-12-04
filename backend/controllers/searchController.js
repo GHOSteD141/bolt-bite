@@ -1,4 +1,5 @@
-const Restaurant = require('../models/restaurant');
+// Require the compiled CJS model to avoid re-defining the same Mongoose model
+const Restaurant = require('../models/restaurant.cjs');
 const { menuItems } = require('../data/menu');
 
 // Combined search for restaurants and food items
