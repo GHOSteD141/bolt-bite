@@ -1,132 +1,120 @@
-# Bolt Bite - Modern Food Delivery Application
+# Bolt-Bite
 
-## 🚀 Project Overview
+Bolt-Bite is a full-stack web application (backend + frontend) that provides a seamless experience for customers to browse restaurants, view menus, add items to cart, and proceed to checkout with multiple payment options. This README documents setup, development, and deployment instructions so contributors and operators can get started quickly.
 
-**Bolt Bite** is a full-stack, production-ready food delivery application built with modern web technologies. It provides a seamless experience for customers to browse restaurants, view menus, add items to cart, and proceed to checkout with multiple payment options. The platform includes AI-powered customer support and intelligent food pairing recommendations.
+## Table of contents
+- Project overview
+- Features
+- Tech stack
+- Prerequisites
+- Repository layout
+- Environment variables
+- Installation
+- Run / Development
+- Database seeding
+- Tests & linting
+- Production build & deployment notes
+- Contributing
+- License & contact
 
----
+## Project overview
+Bolt-Bite is designed to manage food delivery orders, display restaurant menus, and handle user authentication. The codebase is split into two primary parts:
+- backend: API, data models, seeding and business logic
+- frontend: UI and client-side routing
 
-## 📋 Table of Contents
+## Features
+- RESTful API endpoints for core resources
+- User authentication and role handling
+- Responsive frontend built with modern web stack
+- Database seeding script for initial data
+- Clear separation of frontend and backend for independent development
+- AI-powered customer support and intelligent food pairing recommendations
 
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Project Structure](#project-structure)
-- [Installation & Setup](#installation--setup)
-- [Running the Application](#running-the-application)
-- [API Endpoints](#api-endpoints)
-- [Screenshots & Usage](#screenshots--usage)
-- [Future Enhancements](#future-enhancements)
+## Tech stack
+- Backend: Node.js, Express, MongoDB
+- Frontend: React, build tooling (npm/Yarn)
+- Other: dotenv for configuration, testing libs as appropriate
 
----
+## Prerequisites
+- Node.js (v14+ recommended)
+- npm (v6+) or Yarn
+- MongoDB configured and running
+- Git
 
-## 🛠️ Tech Stack
+## Repository layout
+- /backend — server code, package.json, seed script (seed.js)
+- /frontend — client app, package.json
+- .dist/run.txt — helper run commands (dev convenience)
 
-### Frontend
-- **React.js** - UI library for building interactive interfaces
-- **React Router** - Client-side routing
-- **Tailwind CSS** - Utility-first CSS framework for responsive design
-- **Axios** - HTTP client for API requests
-- **LocalStorage** - Client-side data persistence
+## Environment variables
+Create a `.env` file in the backend (and frontend if required) with required keys. Example backend `.env`:
+```
+PORT=5000
+DATABASE_URL=your_database_connection_string
+JWT_SECRET=your_jwt_secret
+NODE_ENV=development
+```
+Adjust the names/values to match configuration used in the code. Do not commit secrets.
 
-### Backend
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web application framework
-- **MongoDB** - NoSQL database
-- **Mongoose** - MongoDB object modeling
-- **Google Generative AI (Gemini 2.0)** - AI-powered chat support
-- **CORS** - Cross-origin resource sharing
-- **Dotenv** - Environment variable management
+## Installation
+1. Clone the repository
+   - git clone <repo-url>
+2. Install backend dependencies:
+   - cd backend
+   - npm install
+3. Install frontend dependencies:
+   - cd ../frontend
+   - npm install
 
-### Tools & Utilities
-- **Git & GitHub** - Version control
-- **VS Code** - Development environment
-- **Postman** - API testing
-- **npm** - Package manager
+## Run / Development
+The repository includes convenience commands. From repository root you can start each part independently.
 
----
+Backend:
+- cd "c:\Users\SHREYAJIT BEURA\OneDrive\Documents\GitHub\bolt-bite\backend"
+- npm start
 
-## ✨ Features
+Frontend:
+- cd "c:\Users\SHREYAJIT BEURA\OneDrive\Documents\GitHub\bolt-bite\frontend"
+- npm start
 
-### 1. **Restaurant Discovery**
-- ✅ Browse 7+ pre-seeded restaurants with unique images
-- ✅ View restaurant ratings, cuisines, and delivery information
-- ✅ Search restaurants by name and cuisine
-- ✅ Responsive restaurant cards with hover effects
+You may also run the seed script after the backend dependencies are installed to populate initial data:
+- cd "c:\Users\SHREYAJIT BEURA\OneDrive\Documents\GitHub\bolt-bite\backend"
+- node seed.js
 
-### 2. **Menu & Ordering**
-- ✅ Dynamic menu display with categorized food items
-- ✅ 50+ food items with specific, high-quality Unsplash images
-- ✅ Veg/Non-veg indicators for each item
-- ✅ Discount badges for promotional items (up to 30% off)
-- ✅ Real-time price calculation
-- ✅ Add to cart with quantity controls (+ / - buttons)
-- ✅ Cart persistence across sessions
+Tip: The file `.dist\run.txt` contains those commands for quick copy/paste.
 
-### 3. **Shopping Cart**
-- ✅ View all selected items with images and quantities
-- ✅ Update quantities in real-time
-- ✅ Remove items from cart
-- ✅ Calculate subtotal, tax, and delivery fees
-- ✅ Include cutlery option
-- ✅ Sticky order summary panel
+## Database seeding
+Run the included seeding script to populate example data:
+- cd backend
+- node seed.js
 
-### 4. **Checkout Process**
-- ✅ 3-step checkout flow:
-  1. **Cart Review** - Confirm items with images
-  2. **Delivery Details** - Enter name, email, address, contact
-  3. **Payment Method Selection**
-- ✅ Progress bar showing checkout steps
-- ✅ Form validation
-- ✅ Back/Next navigation
+Confirm seed success by checking logs or hitting the relevant API endpoints.
 
-### 5. **Multiple Payment Methods**
-- ✅ **Credit/Debit Card** - With card number, expiry, CVV
-- ✅ **UPI** - Google Pay, PhonePe, Paytm compatible
-- ✅ **Digital Wallets** - Apple Pay, Google Wallet support
-- ✅ **Cash on Delivery (COD)** - Pay at doorstep
-- ✅ Secure payment flow
+## Tests & linting
+- Tests: run `npm test` in backend and frontend if test scripts are defined in package.json.
+- Lint: run `npm run lint` if available.
 
-### 6. **AI-Powered Support**
-- ✅ Floating support button (bottom-right corner)
-- ✅ Live chat with **Gemini 2.0 AI** integration
-- ✅ Smart food recommendations based on menu
-- ✅ **Aggressive discount highlighting** - Automatically highlights ongoing deals
-- ✅ Natural language interactions
-- ✅ Fallback responses when API is unavailable
-- ✅ Response caching for performance
+Add or update test suites before merging major changes.
 
-### 7. **Smart Food Pairing**
-- ✅ AI-powered pairing suggestions
-- ✅ Flavor profile-based recommendations:
-  - Spicy dishes pair with creamy beverages
-  - Savory items pair with tangy accompaniments
-  - Heavy meals pair with light desserts
-- ✅ Display pairing reasons to users
+## Production build & deployment notes
+- Frontend: build the production bundle (e.g., `npm run build`) and serve via static hosting or integrate with backend static serving.
+- Backend: ensure environment variables are set in your hosting environment (PORT, DATABASE_URL, JWT_SECRET).
+- Use process managers (PM2, systemd) or containers for production reliability.
+- Secure secrets using environment or secret managers.
 
-### 8. **UI/UX Design**
-- ✅ **Minimalist & Modern** design with Tailwind CSS
-- ✅ **Responsive** - Mobile, tablet, and desktop optimized
-- ✅ **Food Images** - Specific, high-quality images for each item
-- ✅ **Restaurant Images** - Unique themed images for 7 restaurants
-- ✅ **Gradient Hero Section** - Eye-catching landing page
-- ✅ **Smooth Animations** - Hover effects, transitions, loading states
-- ✅ **Dark Mode Ready** - CSS variables for easy theming
-- ✅ **Accessibility** - Semantic HTML, ARIA labels
+## Contributing
+- Fork the repository and create a topic branch per change.
+- Run linters and tests before opening a pull request.
+- Keep commit messages descriptive.
+- For significant changes open an issue first to discuss design.
 
-### 9. **Data & Database**
-- ✅ **MongoDB Integration** - Store restaurants, orders, user data
-- ✅ **Pre-seeded Data** - 7 restaurants with complete menu data
-- ✅ **50+ Menu Items** - Organized by category (Pizzas, Chinese, Indian, etc.)
-- ✅ **Discount System** - Integrated promotional pricing
-- ✅ **Flavor Profiles** - AI-powered pairing system
+## Troubleshooting
+- If the server fails to connect to DB, check DATABASE_URL and that DB is reachable.
+- If ports collide, adjust PORT environment variable.
+- Review logs printed by npm start for detailed errors.
 
-### 10. **Admin & Backend Features**
-- ✅ **RESTful API** - Well-structured endpoints
-- ✅ **Error Handling** - Comprehensive error management
-- ✅ **Authentication Ready** - Structure for user authentication
-- ✅ **CORS Enabled** - Secure cross-origin requests
-- ✅ **Environment Variables** - Secure configuration management
+## License
+Specify the project license here (e.g., MIT). Update the LICENSE file accordingly.
 
----
-
-## 📁 Project Structure
+## Contact
+For questions or issues, open an issue in the repo or contact the maintainers as appropriate.
