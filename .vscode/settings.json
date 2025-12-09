@@ -1,5 +1,5 @@
 {
-  // Disable all heavy features
+  // Disable heavy features
   "extensions.ignoreRecommendations": true,
   "telemetry.telemetryLevel": "off",
   
