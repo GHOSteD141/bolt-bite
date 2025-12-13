@@ -116,7 +116,7 @@ const extractCuisines = (category, name) => {
 // Generate indexes
 const searchIndexes = createSearchIndexes();
 
-// Search functions
+// Search functions(not implimented!#)
 const searchFoodItems = (query, options = {}) => {
   const {
     category = null,
@@ -138,7 +138,7 @@ const searchFoodItems = (query, options = {}) => {
     );
   }
 
-  // Filter by category
+  // Filter by category(not implimented in frontend!#)
   if (category && searchIndexes.categoryIndex[category]) {
     results = results.filter(item => item.category === category);
   }
@@ -162,7 +162,7 @@ const searchFoodItems = (query, options = {}) => {
     results = results.filter(item => item.price <= maxPrice);
   }
 
-  // Sort by relevance (exact name matches first, then category matches)
+  // Sort by relevance (exact name matches first, then category matches)(not implimented in frontend!#)
   if (query) {
     results.sort((a, b) => {
       const aExactMatch = a.name.toLowerCase() === query.toLowerCase();
